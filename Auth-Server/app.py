@@ -1,21 +1,12 @@
-from flask import Flask, json, Response, request, url_for, redirect
-from flask_pymongo import MongoClient
-from flask_hashing import Hashing
-import secrets
-from bson.json_util import dumps
-from flask_jwt_extended import JWTManager, create_access_token, create_refresh_token, get_jwt_identity, jwt_required
-from dotenv import load_dotenv
-import os
-from datetime import timedelta
-from authlib.integrations.flask_client import OAuth
-expires = timedelta(minutes=15)
+from imports.imports import *
 
+
+
+expires = timedelta(minutes=15)
 load_dotenv('../')  # Carica le variabili d'ambiente da .env
 app = Flask(__name__)
-
 oauth = OAuth(app)
 app.config['SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
-
 ## runnarla con flask --debug run --port 8080 (non va la porta 5000 per mac per il localhost e serve il dominio localhost per oauth di facebook in fase di sviluppo)
 google = oauth.register(
     name='google',
@@ -29,17 +20,22 @@ google = oauth.register(
     redirect_uri='http://127.0.0.1:8080/auth/google/authorize',
     client_kwargs={'scope': 'email profile'},
 )
-
 client = MongoClient()
 hashing = Hashing(app)
 jwt = JWTManager(app)
 app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY') 
-
+#collezione di utenti mongodb
 db = client['users']
 collection = db['users']
-
-
 #rotta di login
+
+
+
+
+
+
+
+
 @app.route('/auth/login', methods=[ 'POST'])
 def login ():
     if request.method == 'POST':
@@ -61,6 +57,10 @@ def login ():
                 return Response(json.dumps({'message': 'Invalid password'}), status=401)
         else:
             return Response(json.dumps({'message': 'User not found'}), status=404)
+        
+
+
+
 
 
 #creo un admin
@@ -82,6 +82,8 @@ def register():
 
 
 
+
+
 #rotta per ottenere un nuovo access token
 @app.route('/auth/refresh_token', methods=['POST'])
 @jwt_required(refresh=True)
@@ -92,6 +94,7 @@ def refresh_token():
         return Response(json.dumps({'message':new_access_token}), status=200)
     except:
         return Response(json.dumps({'message': 'Invalid token or internal server error'}), status=401)
+    
 
 
 
@@ -99,19 +102,25 @@ def refresh_token():
 
 
 
-
-
-
-
-#oAuth 
+#oAuth google
+    
 #mostra bottone di login esempio di view html 
 @app.route('/')
 def index():
     return '<a href="/auth/google/login">Login con Google</a>'
+
+
 #ottengo il token
 @app.route('/auth/google/login')
 def google_login():
     return google.authorize_redirect(url_for('authorize', _external=True))
+
+
+
+
+
+
+
 #ottengo le informazioni andando a chiamare l'api userinfo
 @app.route('/auth/google/authorize')
 def authorize():

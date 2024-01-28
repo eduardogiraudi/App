@@ -1,0 +1,36 @@
+#!/bin/bash
+
+# Funzione per ottenere il percorso assoluto dello script
+get_script_dir() {
+  SOURCE="${BASH_SOURCE[0]}"
+  while [ -h "$SOURCE" ]; do
+    DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+    SOURCE="$(readlink "$SOURCE")"
+    [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
+  done
+  DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+  echo "$DIR"
+}
+
+# Ottieni il percorso del progetto
+project_dir=$(get_script_dir)
+
+# Funzione per aprire un nuovo terminale e eseguire il comando in background
+open_terminal() {
+    osascript -e "tell application \"Terminal\" to do script \"cd $project_dir; $1\""
+}
+
+echo "Avvio il server di autenticazione"
+open_terminal "cd Auth-Server; flask --debug run --port 8080"
+
+# Attendi un po' prima di avviare il server successivo
+sleep 1
+
+echo "Avvio MongoDB"
+open_terminal "cd Auth-Server; docker compose up"
+
+# Avvio del server npm in un secondo terminale separato
+echo "Avvio il resource server"
+open_terminal "cd Resource-Server; flask --debug run --port 5001"
+
+echo "Tutti i server avviati"
