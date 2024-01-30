@@ -20,11 +20,11 @@ def hash_to_last_4_int(hash):
             break
     return otp
 
-@app.route('/otp/generate/<string:userID>', methods=['POST'])
+@app.route('/otp/generate/', methods=['POST'])
 @jwt_required()
-def generateOTP(userID):
+def generateOTP():
     current_timestamp = str(datetime.now())
-
+    userID = get_jwt_identity()
     send_message_to = request.form.get('phone')
     account_sid = 'AC63caf652cf79627168cac7b3fabf9830'
     auth_token = '115196ece403be043e51101da30e6336'
@@ -49,10 +49,11 @@ def generateOTP(userID):
 
 
 
-@app.route('/otp/check/<string:userID>', methods=['POST'])
+@app.route('/otp/check/', methods=['POST'])
 @jwt_required()
-def checkOTP(userID):
+def checkOTP():
     try:
+        userID = get_jwt_identity()
         given_otp = request.form.get('otp')
         #converte la data ottenuta in oggetto time
         given_timestamp = request.form.get('timestamp')
