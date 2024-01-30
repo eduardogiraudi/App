@@ -70,4 +70,4 @@ def checkOTP(userID):
         else:
             return Response(json.dumps({'message': 'OTP expired'}), status=401)
     except ValueError as ex:
-        return Response(json.dumps({'message': 'General error, please try again'+str(ex)}), status=500)
+        return Response(json.dumps({'message': 'General error, please try again'}), status=500)
