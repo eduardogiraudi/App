@@ -18,7 +18,7 @@ def generateOTP(userID):
     account_sid = 'AC63caf652cf79627168cac7b3fabf9830'
     auth_token = '115196ece403be043e51101da30e6336'
     client = Client(account_sid, auth_token)
-    message = client.messages.create(
+    message = Client.messages.create(
         to=send_message_to,
         from_='+17204662086',
         body=hashing.hash_value(current_timestamp + userID + otp_secret_key, salt=otp_salt),
