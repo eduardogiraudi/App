@@ -8,6 +8,7 @@ app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
 jwt = JWTManager(app)
 hashing = Hashing(app)
 mongoclient = MongoClient(os.getenv('MONGO_HOST'), int(os.getenv('MONGO_PORT')))
+logging.basicConfig(filename='./logs/errors.log', level=logging.ERROR)
 
 
 def dynamic_secret_key(timestamp):
@@ -53,7 +54,8 @@ def generateOTP():
         }
             # bisogna ancora prendere le ultime 4 cifre numeriche dell'hashing
             }), 200)
-    except:
+    except ValueError as ValErr:
+        app.logger.error(str(ValErr))
         return Response(json.dumps({'message':'General error'}),status=500)
 
 
@@ -89,5 +91,6 @@ def checkOTP():
                 return Response(json.dumps({'message': 'Incorrect OTP'}), status=401)
         else:
             return Response(json.dumps({'message': 'OTP expired'}), status=401)
-    except:
+    except ValueError as ValErr:
+        app.logger.error(str(ValErr))
         return Response(json.dumps({'message': 'General error, please try again' }), status=500)

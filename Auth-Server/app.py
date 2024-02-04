@@ -26,6 +26,7 @@ hashing = Hashing(app)
 jwt = JWTManager(app)
 app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
 app.config['SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
+logging.basicConfig(filename='./logs/errors.log', level=logging.ERROR)
 #collezione di utenti mongodb
 db = client['users']
 collection = db['users']
@@ -79,7 +80,8 @@ def register():
         }
         collection.insert_one(admin)
         return Response(json.dumps({'message': 'Account created'}),status=200)
-    except:
+    except ValueError as ValErr:
+        app.logger.error(str(ValErr))
         return Response(json.dumps({'message': 'Error, please try again'}), status=500)
 
 
@@ -94,7 +96,8 @@ def refresh_token():
         current_user = get_jwt_identity()
         new_access_token = create_access_token(identity=current_user, expires_delta=expires)
         return Response(json.dumps({'message':new_access_token}), status=200)
-    except:
+    except ValueError as ValErr:
+        app.logger.error(str(ValErr))
         return Response(json.dumps({'message': 'Invalid token or internal server error'}), status=401)
     
 
@@ -141,6 +144,7 @@ def authorize():
         return redirect('/')
 
         # Impostare le informazioni utente nei cookie
-    except:
+    except ValueError as ValErr:
+        app.logger.error(str(ValErr))
         #altrimenti redirect a pagina "di login"
         return redirect('/')
