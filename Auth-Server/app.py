@@ -3,15 +3,16 @@ from imports.imports import *
 
 
 expires = timedelta(minutes=15)
-load_dotenv('../')  # Carica le variabili d'ambiente da .env
+load_dotenv('../.env')  # Carica le variabili d'ambiente da .env
+load_dotenv('./Auth.env')
 app = Flask(__name__)
 oauth = OAuth(app)
-app.config['SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
+
 ## runnarla con flask --debug run --port 8080 (non va la porta 5000 per mac per il localhost e serve il dominio localhost per oauth di facebook in fase di sviluppo)
 google = oauth.register(
     name='google',
-    client_id='671439948785-cv5o90u7o6or6109vps00lkmds9d945g.apps.googleusercontent.com',
-    client_secret='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',
+    client_id=os.getenv('GOOGLE_ID'),
+    client_secret=os.getenv('GOOGLE_SECRET'),
     authorize_url='https://accounts.google.com/o/oauth2/auth',
     authorize_params=None,
     access_token_url='https://accounts.google.com/o/oauth2/token',
@@ -20,10 +21,11 @@ google = oauth.register(
     redirect_uri='http://127.0.0.1:8080/auth/google/authorize',
     client_kwargs={'scope': 'email profile'},
 )
-client = MongoClient()
+client = MongoClient(os.getenv('MONGO_HOST'), int(os.getenv('MONGO_PORT')))
 hashing = Hashing(app)
 jwt = JWTManager(app)
-app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY') 
+app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
+app.config['SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
 #collezione di utenti mongodb
 db = client['users']
 collection = db['users']
@@ -131,7 +133,14 @@ def authorize():
         profile = resp.json()
 
         #todo: salvare le info utili nel db utenti e restituire un access token per mantenere l'utente loggato
-        return f'{profile} <a href="/profile">Profilo</a> <img src="{profile["picture"]}"/>'
+        # return f'{profile} <a href="/profile">Profilo</a> <img src="{profile["picture"]}"/>'
+                # Salvare le informazioni utili nei cookie
+        response = make_response(f'{profile} <a href="/profile">Profilo</a> <img src="{profile["picture"]}"/>')
+        # response.set_cookie('') il nostro jwt deve essere
+        # create_access_token(profile['name'])
+        return redirect('/')
+
+        # Impostare le informazioni utente nei cookie
     except:
         #altrimenti redirect a pagina "di login"
         return redirect('/')
