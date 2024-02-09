@@ -8,6 +8,8 @@ load_dotenv('./Auth.env')
 app = Flask(__name__)
 oauth = OAuth(app)
 
+CORS(app)
+
 ## runnarla con flask --debug run --port 8080 (non va la porta 5000 per mac per il localhost e serve il dominio localhost per oauth di facebook in fase di sviluppo)
 google = oauth.register(
     name='google',
@@ -31,7 +33,6 @@ logging.basicConfig(filename='./logs/errors.log', level=logging.ERROR)
 db = client['users']
 collection = db['users']
 #rotta di login
-
 
 
 
@@ -134,17 +135,18 @@ def authorize():
         token = google.authorize_access_token()
         resp = google.get('https://www.googleapis.com/oauth2/v3/userinfo')
         profile = resp.json()
-
         #todo: salvare le info utili nel db utenti e restituire un access token per mantenere l'utente loggato
         # return f'{profile} <a href="/profile">Profilo</a> <img src="{profile["picture"]}"/>'
                 # Salvare le informazioni utili nei cookie
-        response = make_response(f'{profile} <a href="/profile">Profilo</a> <img src="{profile["picture"]}"/>')
-        # response.set_cookie('') il nostro jwt deve essere
+        response = make_response(redirect('http://localhost:3000'))
+        response.set_cookie('token', create_access_token(profile['sub'],expires_delta=expires)) 
+        response.set_cookie('refresh_token', create_refresh_token(profile['sub'],expires_delta=expires)) 
         # create_access_token(profile['name'])
-        return redirect('/')
+        return response
 
         # Impostare le informazioni utente nei cookie
     except ValueError as ValErr:
         app.logger.error(str(ValErr))
         #altrimenti redirect a pagina "di login"
         return redirect('/')
+    
