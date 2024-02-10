@@ -49,11 +49,12 @@ def login ():
         if real_user:
             if hashing.check_value(real_user["password"],password, real_user["salt"]):
                 response = {
-                    'name' : real_user['name'], #deve essere univoco
+                    'email' : real_user['email'], #deve essere univoco
+                    'name': real_user['name'],
                     'role' : real_user['role'],
-                    '_id' : real_user['_id'],
-                    'token': create_access_token(identity=real_user['name'], expires_delta=expires), #mettere poi id
-                    'refresh_token': create_refresh_token(identity=real_user['name'])
+                    '_id' : str(real_user['_id']),
+                    'token': create_access_token(identity=str(real_user['_id']), expires_delta=expires), #mettere poi id
+                    'refresh_token': create_refresh_token(identity=str(real_user['_id']))
                 } #restituire poi un token e un refresh token
                 response = dumps({'message':response})
                 return Response(response, status=200)
@@ -73,7 +74,7 @@ def register():
     try:
         salt = secrets.token_hex(16)
         admin = {
-            'name': request.form.get('name'),
+            'username': request.form.get('username'),
             'email': request.form.get('email'),
             'password': hashing.hash_value(request.form.get('password'), salt=salt),
             'salt': salt,
@@ -138,9 +139,17 @@ def authorize():
         #todo: salvare le info utili nel db utenti e restituire un access token per mantenere l'utente loggato
         # return f'{profile} <a href="/profile">Profilo</a> <img src="{profile["picture"]}"/>'
                 # Salvare le informazioni utili nei cookie
+        if(not collection.find_one({'google_id':profile['sub']})):
+            collection.insert_one({
+                'google_id': profile['sub'],
+                'email': profile['email'],
+                'username': profile['given_name'],
+                'propic': profile['picture']
+            })
         response = make_response(redirect('http://localhost:3000'))
         response.set_cookie('token', create_access_token(profile['sub'],expires_delta=expires)) 
         response.set_cookie('refresh_token', create_refresh_token(profile['sub'],expires_delta=expires)) 
+
         # create_access_token(profile['name'])
         return response
 
