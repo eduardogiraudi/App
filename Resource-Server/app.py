@@ -11,3 +11,17 @@ jwt = JWTManager(app)
 @jwt_required()
 def protected(): 
     return Response(get_jwt_identity(), status=200)
+
+@app.route('/resource/profile', methods=['GET', 'POST', 'PUT', 'DELETE'])
+@jwt_required()
+def profile():
+    if request.method == 'GET': 
+        pass
+    if request.method == 'POST': 
+        pass
+    if request.method == 'PUT': 
+        pass
+    if request.method == 'DELETE': 
+        pass
+    
+    return 'lol'

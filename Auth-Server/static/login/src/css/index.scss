@@ -29,3 +29,12 @@
     max-width: 400px;
     min-width: min-content;
   }
+
+  main{
+    display: flex;
+    flex-direction: column;
+      form{
+        display: flex;
+        flex-direction: column;
+      }
+  }

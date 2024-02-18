@@ -36,6 +36,41 @@ collection = db['users']
 
 
 
+@app.route('/auth/forgot_password', methods=['POST'])
+def require_reset_token (): 
+    serializer = URLSafeTimedSerializer(os.getenv('JWT_SECRET_KEY'))
+    email = request.form.get('email')
+    user = collection.find_one({'email':email})
+    if user:
+        token = str(user['_id'])
+        token = serializer.dumps(token)
+        #manda la mail e restituisce ok per dire al frontend per far visualizzare i diversi tipi di messaggio
+        return Response(json.dumps({'message':'ok'}),status=200)
+    else:
+        return Response(json.dumps({'message':'User not found'}),status=404)
+        
+@app.route('/auth/reset_password/<token>',methods=['POST'])
+def reset_password (token):
+    try:
+        #deve gestire il cambio password nel body della request
+        serializer = URLSafeTimedSerializer(app.config['JWT_SECRET_KEY'])
+        token_data = serializer.loads(token, max_age=900)
+        salt = secrets.token_hex(16)
+        password = hashing.hash_value(request.form.get('password'), salt=salt)
+        collection.update_one({'_id': ObjectId(token_data)},{'$set': {'password': password,'salt': salt}})
+        return Response(json.dumps({'message':token_data}),status=200)
+    except SignatureExpired:
+        return Response(json.dumps({'message':'expired link'}),status=410)    
+    except BadSignature:
+        return Response(json.dumps({'message':'invalid token'}), status=401)
+
+    # try:
+    #     pass
+    # except SignatureExpired:
+    #     return jsonify({'message': 'Token has expired'})
+
+    # except BadSignature:
+    #     return jsonify({'message': 'Invalid token'})
 
 
 
@@ -68,19 +103,20 @@ def login ():
 
 
 
-#creo un admin
+#crea account
 @app.route('/auth/register', methods=['POST'])
 def register():
     try:
         salt = secrets.token_hex(16)
-        admin = {
+        #aggiungere validazione poi
+        user = {
             'username': request.form.get('username'),
             'email': request.form.get('email'),
             'password': hashing.hash_value(request.form.get('password'), salt=salt),
             'salt': salt,
             'role': 'user'
         }
-        collection.insert_one(admin)
+        collection.insert_one(user)
         return Response(json.dumps({'message': 'Account created'}),status=200)
     except ValueError as ValErr:
         app.logger.error(str(ValErr))
