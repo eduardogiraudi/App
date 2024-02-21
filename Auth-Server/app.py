@@ -28,6 +28,13 @@ hashing = Hashing(app)
 jwt = JWTManager(app)
 app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
 app.config['SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
+app.config['MAIL_SERVER']=os.getenv('MAIL_SERVER')
+app.config['MAIL_PORT'] = os.getenv('MAIL_PORT')
+app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
+app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USE_SSL'] = False
+mail = Mail(app)
 logging.basicConfig(filename='./logs/errors.log', level=logging.ERROR)
 #collezione di utenti mongodb
 db = client['users']
@@ -36,22 +43,33 @@ collection = db['users']
 
 
 
+
+
+
+
+
 @app.route('/auth/forgot_password', methods=['POST'])
 def require_reset_token (): 
-    serializer = URLSafeTimedSerializer(os.getenv('JWT_SECRET_KEY'))
-    email = request.form.get('email')
-    user = collection.find_one({'email':email})
-    if user:
-        token = str(user['_id'])
-        token = serializer.dumps(token)
-        #manda la mail e restituisce ok per dire al frontend per far visualizzare i diversi tipi di messaggio
-        return Response(json.dumps({'message':'ok'}),status=200)
-    else:
-        return Response(json.dumps({'message':'User not found'}),status=404)
-        
-@app.route('/auth/reset_password/<token>',methods=['POST'])
-def reset_password (token):
     try:
+        serializer = URLSafeTimedSerializer(os.getenv('JWT_SECRET_KEY'))
+        email = request.form.get('email')
+        user = collection.find_one({'email':email})
+        if user:
+            token = str(user['_id'])
+            token = serializer.dumps(token)
+            #manda la mail e restituisce ok per dire al frontend per far visualizzare i diversi tipi di messaggio
+            msg = Message('Il tuo link di recupero', body=os.getenv('FRONTEND_DOMAIN')+'/change_password?token='+token, sender=os.getenv('MAIL_SENDER'), recipients=[email])
+            mail.send(msg)
+            return Response(json.dumps({'message':'ok'}),status=200)
+        else:
+            return Response(json.dumps({'message':'User not found'}),status=404)
+    except ValueError as er: 
+        return Response(json.dumps({'message':'bad request, missing arguments'}),status=400)
+        
+@app.route('/auth/reset_password',methods=['POST'])
+def reset_password ():
+    try:
+        token = request.form.get('token')
         #deve gestire il cambio password nel body della request
         serializer = URLSafeTimedSerializer(app.config['JWT_SECRET_KEY'])
         token_data = serializer.loads(token, max_age=900)
@@ -78,9 +96,9 @@ def reset_password (token):
 @app.route('/auth/login', methods=[ 'POST'])
 def login ():
     if request.method == 'POST':
-        name = request.form.get('name')
+        email = request.form.get('email')
         password = request.form.get('password')
-        real_user = collection.find_one({'name':name})
+        real_user = collection.find_one({'email':email})
         if real_user:
             if hashing.check_value(real_user["password"],password, real_user["salt"]):
                 response = {
@@ -182,7 +200,7 @@ def authorize():
                 'username': profile['given_name'],
                 'propic': profile['picture']
             })
-        response = make_response(redirect('http://localhost:3000'))
+        response = make_response(redirect(os.getenv('FRONTEND_DOMAIN')))
         response.set_cookie('token', create_access_token(profile['sub'],expires_delta=expires)) 
         response.set_cookie('refresh_token', create_refresh_token(profile['sub'],expires_delta=expires)) 
 

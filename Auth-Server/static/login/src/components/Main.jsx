@@ -1,8 +1,8 @@
-import LoginForm from "./LoginForm"
+import AuthForms from "./AuthForms"
 function Main(){
     return (
     <main>
-        <LoginForm/>
+        <AuthForms/>
     </main>
     )    
 }export default Main

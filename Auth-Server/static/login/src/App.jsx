@@ -1,4 +1,4 @@
-import { useState } from "react"
+
 import Main from "./components/Main"
 
 function App(){
@@ -8,11 +8,6 @@ function App(){
     </>
     )
 }export default App
-
-
-
-
-
 // getta i cookie 
 // function getCookie(name) {
 //     const cookies = document.cookie.split('; ');
@@ -24,6 +19,3 @@ function App(){
 //     }
 //     return null;
 // }
-
-
-
