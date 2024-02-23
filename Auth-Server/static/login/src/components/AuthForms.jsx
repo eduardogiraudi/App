@@ -94,6 +94,7 @@ function AuthForms(){
                         <Route path="/register" element={<form onSubmit={handleSubmit}><Register setErr={setErr} setSubmitBlock={setSubmitBlock}/><input type="submit" disabled={submitBlock?true:false}/></form>}/>
                         <Route path="/forgot" element={<form onSubmit={handleSubmit}><Forgot/><input type="submit"/></form>}/>
                         <Route path="/change_password" element={<ChangePassword/>}/>
+                        <Route path="/activate_account" element='ciao'/>
                     </Routes>
                 {success&&<div>Operazione andata a buon fine </div>}
                 {err&&<div>{err}</div>}

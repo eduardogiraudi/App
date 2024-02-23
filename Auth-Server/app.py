@@ -48,8 +48,7 @@ password_policy = PasswordPolicy.from_names(
     length=8,
     uppercase=1,
     numbers=1,
-    special=1,
-    lowercase=1
+    special=1
 )
 
 
@@ -148,23 +147,21 @@ def user_exists():
 @app.route('/auth/register', methods=['POST'])
 def register():
     try:
-        serializer = URLSafeTimedSerializer(os.getenv('JWT_SECRET_KEY'))
-        token = str(user['_id'])
-        token = serializer.dumps(token)
 
         salt = secrets.token_hex(16)
         username = request.form.get('username')
         password = request.form.get('password')
         confirm_password = request.form.get('confirm_password')
         
+
         if collection.find_one({'username':username}):
             return Response(json.dumps({'message':'username already exist'}), status=409)
 
-        if not password_policy.test(password):
-            return Response(json.dumps({'message':'password does not meet complexity requirements'}), status=400)
         if confirm_password!=password:
             return Response(json.dumps({'message':'password and confirm password do not match'}),status=400)
-
+        # policy.test returna un array vuoto se la pass rispetta i requirements, Passwordstats restituisce quanti match ci sono, quindi se non ci sono lettere minuscole i requirements non vengono rispettati
+        if password_policy.test(password) or (not PasswordStats(password).letters_lowercase):
+            return Response(json.dumps({'message':'password does not meet complexity requirements'}), status=400)
         #validazione email (se non è valida la butta in exception e se esiste già returna 409)
         email = request.form.get('email')
         validate_email(email)
@@ -178,9 +175,14 @@ def register():
             'email': request.form.get('email'),
             'password': hashing.hash_value(request.form.get('password'), salt=salt),
             'salt': salt,
-            'role': 'user'
+            'role': 'user',
+            'active':False #in tutte le rotte da loggati dobbiamo verificare se l'utente è attivo, magari creiamo un decoratore??
         }
-        collection.insert_one(user)
+        insert=collection.insert_one(user)
+        serializer = URLSafeTimedSerializer(os.getenv('JWT_SECRET_KEY'))
+        token = str(insert.inserted_id)
+        token = serializer.dumps(token)
+
         msg = Message('Il tuo link di attivazione account', body=os.getenv('FRONTEND_DOMAIN')+'/activate_account?token='+token, sender=os.getenv('MAIL_SENDER'), recipients=[email])
         mail.send(msg)
         return Response(json.dumps({'message': 'Account created'}),status=200)
