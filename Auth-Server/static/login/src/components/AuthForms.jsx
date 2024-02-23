@@ -12,6 +12,14 @@ function AuthForms(){
     const [err, setErr] = useState(false);
     const [success, setSuccess] = useState(false); 
     const [submitBlock, setSubmitBlock] = useState(true)
+    const [specialPage, setSpecialPage] = useState(false) // se è true elimina parti della pagina (ad esempio se l'utente si registra si mostra solo il messaggio di successo e non di nuovo il form di registrazione)
+
+
+
+
+
+
+
     const handleSubmit = (e)=>{
         e.preventDefault()
         const body = new FormData(e.currentTarget)
@@ -54,13 +62,15 @@ function AuthForms(){
                 // redirectare in homepage (il frontend del resource server)
                 // window.location.href = 'http://localhost:8080/'
                 console.log(data);
+
+                // gestire il comportamento di login poi, con un redirect al resource server
                 setSuccess(true);
                 setErr(false); 
     
             }else if(loginRegisterForgot==='register'){
-                setSuccess(true);
+                setSuccess('Account creato, si prega di controllare l\'email contenente il link di attivazione account per poter utilizzare il servizio');
                 setErr(false); 
-                // da gestire ancora register
+                
             }else if(loginRegisterForgot==='forgot'){
                 setSuccess(true);
                 setErr(false); 
@@ -96,7 +106,7 @@ function AuthForms(){
                         <Route path="/change_password" element={<ChangePassword/>}/>
                         <Route path="/activate_account" element='ciao'/>
                     </Routes>
-                {success&&<div>Operazione andata a buon fine </div>}
+                {success&&<div>{success}</div>}
                 {err&&<div>{err}</div>}
                 {loginRegisterForgot === 'login' && <Link to='/change_password' onClick={()=>{setLoginRegisterForgot('forgot')}}>Hai dimenticato la password? Ripristinala</Link> }
                 {(loginRegisterForgot==='login'||loginRegisterForgot==='register')&&<LoginWithGoogle/>}
