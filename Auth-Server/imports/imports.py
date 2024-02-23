@@ -13,4 +13,6 @@ from authlib.integrations.flask_client import OAuth
 import logging
 from flask_cors import CORS
 from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
-from flask_mail import Mail, Message
+from flask_mail import Mail, Messageù
+from email_validator import validate_email, EmailNotValidError
+from password_strength import PasswordPolicy

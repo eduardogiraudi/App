@@ -44,6 +44,13 @@ collection = db['users']
 
 
 
+password_policy = PasswordPolicy.from_names(
+    length=8,
+    uppercase=1,
+    numbers=1,
+    special=1,
+    lowercase=1
+)
 
 
 
@@ -103,7 +110,7 @@ def login ():
             if hashing.check_value(real_user["password"],password, real_user["salt"]):
                 response = {
                     'email' : real_user['email'], #deve essere univoco
-                    'name': real_user['name'],
+                    'username': real_user['username'],
                     'role' : real_user['role'],
                     '_id' : str(real_user['_id']),
                     'token': create_access_token(identity=str(real_user['_id']), expires_delta=expires), #mettere poi id
@@ -118,14 +125,53 @@ def login ():
         
 
 
-
+#PYMONGO DEMMERDA THROWA STATUS 404 SE UNO DEI DUE ARGOMENTI POSSIBILI è NULL, api da dividere in chech username e email
+@app.route('/auth/user_exists', methods=['GET'])
+def user_exists():
+    if(request.args.get('username')):
+        username = request.args.get('username')
+        if(collection.find_one({'username':username})):
+            return Response(json.dumps({'message':'Resource already exists'}),status=409)
+        else:
+            return Response(json.dumps({'message':'available'}), status=200)
+    elif (request.args.get('email')):
+        email = request.args.get('email')
+        if(collection.find_one({'email':email})):
+            return Response(json.dumps({'message':'Resource already exists'}),status=409)
+        else:
+            return Response(json.dumps({'message':'available'}), status=200)
+    else:
+        return Response(json.dumps({'message':'missing arguments'}), status=400)
 
 
 #crea account
 @app.route('/auth/register', methods=['POST'])
 def register():
     try:
+        serializer = URLSafeTimedSerializer(os.getenv('JWT_SECRET_KEY'))
+        token = str(user['_id'])
+        token = serializer.dumps(token)
+
         salt = secrets.token_hex(16)
+        username = request.form.get('username')
+        password = request.form.get('password')
+        confirm_password = request.form.get('confirm_password')
+        
+        if collection.find_one({'username':username}):
+            return Response(json.dumps({'message':'username already exist'}), status=409)
+
+        if not password_policy.test(password):
+            return Response(json.dumps({'message':'password does not meet complexity requirements'}), status=400)
+        if confirm_password!=password:
+            return Response(json.dumps({'message':'password and confirm password do not match'}),status=400)
+
+        #validazione email (se non è valida la butta in exception e se esiste già returna 409)
+        email = request.form.get('email')
+        validate_email(email)
+        if collection.find_one({'email':email}):
+            return Response(json.dumps({'message':'email already exist'}),status=409)
+
+
         #aggiungere validazione poi
         user = {
             'username': request.form.get('username'),
@@ -135,7 +181,14 @@ def register():
             'role': 'user'
         }
         collection.insert_one(user)
+        msg = Message('Il tuo link di attivazione account', body=os.getenv('FRONTEND_DOMAIN')+'/activate_account?token='+token, sender=os.getenv('MAIL_SENDER'), recipients=[email])
+        mail.send(msg)
         return Response(json.dumps({'message': 'Account created'}),status=200)
+    
+
+
+    except EmailNotValidError as e:
+        return Response(json.dumps({'message':'invalid email'}),status=400)
     except ValueError as ValErr:
         app.logger.error(str(ValErr))
         return Response(json.dumps({'message': 'Error, please try again'}), status=500)
