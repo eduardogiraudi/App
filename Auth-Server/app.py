@@ -74,6 +74,7 @@ def require_reset_token ():
         
 @app.route('/auth/reset_password',methods=['POST'])
 def reset_password ():
+    #da mettere i controlli sulle nuove password anche qua poi
     try:
         token = request.form.get('token')
         #deve gestire il cambio password nel body della request
@@ -95,7 +96,6 @@ def reset_password ():
 
     # except BadSignature:
     #     return jsonify({'message': 'Invalid token'})
-
 
 
 
@@ -122,6 +122,7 @@ def login ():
         else:
             return Response(json.dumps({'message': 'User not found'}), status=404)
         
+
 
 
 #PYMONGO DEMMERDA THROWA STATUS 404 SE UNO DEI DUE ARGOMENTI POSSIBILI è NULL, api da dividere in chech username e email
@@ -152,7 +153,7 @@ def register():
         username = request.form.get('username')
         password = request.form.get('password')
         confirm_password = request.form.get('confirm_password')
-        
+        email = request.form.get('email')
 
         if collection.find_one({'username':username}):
             return Response(json.dumps({'message':'username already exist'}), status=409)
@@ -163,7 +164,7 @@ def register():
         if password_policy.test(password) or (not PasswordStats(password).letters_lowercase):
             return Response(json.dumps({'message':'password does not meet complexity requirements'}), status=400)
         #validazione email (se non è valida la butta in exception e se esiste già returna 409)
-        email = request.form.get('email')
+
         validate_email(email)
         if collection.find_one({'email':email}):
             return Response(json.dumps({'message':'email already exist'}),status=409)
@@ -183,20 +184,33 @@ def register():
         token = str(insert.inserted_id)
         token = serializer.dumps(token)
 
-        msg = Message('Il tuo link di attivazione account', body=os.getenv('FRONTEND_DOMAIN')+'/activate_account?token='+token, sender=os.getenv('MAIL_SENDER'), recipients=[email])
+        msg = Message('Il tuo link di attivazione account', body='il link di attivazione sarà valido per 24 ore '+os.getenv('FRONTEND_DOMAIN')+'/activate_account?token='+token, sender=os.getenv('MAIL_SENDER'), recipients=[email])
         mail.send(msg)
         return Response(json.dumps({'message': 'Account created'}),status=200)
-    
-
-
     except EmailNotValidError as e:
         return Response(json.dumps({'message':'invalid email'}),status=400)
     except ValueError as ValErr:
         app.logger.error(str(ValErr))
         return Response(json.dumps({'message': 'Error, please try again'}), status=500)
 
-
-
+#attiva account
+@app.route('/auth/activate_account', methods=['POST'])
+def activate_account ():
+    try:
+        serializer = URLSafeTimedSerializer(os.getenv('JWT_SECRET_KEY'))
+        token = request.form.get('token')
+        if not token:
+            return Response(json.dumps({'message':'The URL is missing parameters, or it may be incomplete'}), status=400)
+        token_data = serializer.loads(token,max_age=60*60*24)
+        user = collection.find_one({'_id':ObjectId(token_data)})
+        if not user['active']:
+            collection.update_one({'_id':ObjectId(token_data)},{'$set':{'active':True}})
+            return Response(json.dumps({'message':'account activated'}), status=200)
+        return Response(json.dumps({'message':'account already activated'}), status=409)
+    except SignatureExpired:
+        return Response(json.dumps({'message':'link expired, please request a new activation link'}), status=410)
+    except BadSignature:
+        return Response(json.dumps({'message':'invalid link'}), status=401)
 
 
 #rotta per ottenere un nuovo access token

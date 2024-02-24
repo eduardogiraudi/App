@@ -7,6 +7,7 @@ import Login from "./Login";
 import LoginWithGoogle from "./LoginWithGoogle";
 import Register from "./Register";
 import authServer from "./settings";
+import ActivateAccount from "./ActivateAccount";
 function AuthForms(){
     const [loginRegisterForgot, setLoginRegisterForgot] = useState('login') 
     const [err, setErr] = useState(false);
@@ -104,7 +105,7 @@ function AuthForms(){
                         <Route path="/register" element={<form onSubmit={handleSubmit}><Register setErr={setErr} setSubmitBlock={setSubmitBlock}/><input type="submit" disabled={submitBlock?true:false}/></form>}/>
                         <Route path="/forgot" element={<form onSubmit={handleSubmit}><Forgot/><input type="submit"/></form>}/>
                         <Route path="/change_password" element={<ChangePassword/>}/>
-                        <Route path="/activate_account" element='ciao'/>
+                        <Route path="/activate_account" element={<ActivateAccount/>}/>
                     </Routes>
                 {success&&<div>{success}</div>}
                 {err&&<div>{err}</div>}
