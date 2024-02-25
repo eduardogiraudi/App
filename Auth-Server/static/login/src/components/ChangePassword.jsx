@@ -1,4 +1,4 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import authServer from "./settings";
 import { useEffect, useState } from "react";
 
@@ -8,11 +8,11 @@ function ChangePassword (){
     const [confirmPassword, setConfirmPassword] = useState()
     const [passwordErr, setPasswordErr] = useState()
     const [preventSubmit, setPreventSubmit] = useState(true)
-    const [response, setResponse] = useState(false)
+    const [err, setErr] = useState(false)
     const location = useLocation();
     const queryParameters = new URLSearchParams(location.search);
     const token = queryParameters.get('token');
-
+    let navigate = useNavigate()
 
     const handleSubmit = (e)=>{
 
@@ -26,14 +26,20 @@ function ChangePassword (){
         })
         .then(
             res=>{
-                if(res.status===200) setResponse('password cambiata con successo')
+                if(res.status===200) {
+                    navigate('/response',{
+                        state: {
+                            message: 'Password cambiata con successo'
+                        }
+                    })
+                }
                 if(res.status===400) throw new Error('le password non coincidono o non corrispondono alle policy di sicurezza')
                 if(res.status===410) throw new Error('il link è scaduto, si prega di richiederne uno nuovo')
                 if(res.status===401) throw new Error('il link non è valido, si prega di ricontrollare e/o richiederne uno nuovo')
             }
         )
         .catch(err=>{
-            setResponse(err.message)
+            setErr(err.message)
         })
         
     }
@@ -80,14 +86,14 @@ function ChangePassword (){
     },[password, confirmPassword, passwordErr])
     return (
         <>
-            {response&&<div>{response}</div>}
-            {!token&&!response&&<div>Sembra che il link non sia valido, ricontrolla la mail o richiedine uno nuovo</div>}
-            {token&&!response&&<form onSubmit={handleSubmit}>
+            {!token&&<div>Sembra che il link non sia valido, ricontrolla la mail o richiedine uno nuovo</div>}
+            {token&&<form onSubmit={handleSubmit}>
                 <input type="password" name="password" placeholder="password" onChange={handlePasswordChange}/>
                 <input type="password" name="confirm_password" placeholder="confirm password" onChange={handleConfirmPasswordChange}/>
                 {passwordErr&&<div>{passwordErr}</div>}
                 <input type="submit" disabled={preventSubmit?true:false}/>
             </form>}
+            {err&&<div>{err}</div>}
         <Link to={'/login'}>torna al Login</Link>
         </>
     )

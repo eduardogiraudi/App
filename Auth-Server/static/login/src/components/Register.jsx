@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import authServer from "./settings";
 import LoginWithGoogle from "./LoginWithGoogle";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 
 function Register (){
@@ -14,7 +14,7 @@ function Register (){
     const [passwordErr, setPasswordErr] = useState()
     const [submitBlock, setSubmitBlock] = useState(true)
     const [err, setErr] = useState() //errori dopo che il form viene inviato
-
+    let navigate = useNavigate()
     const handleSubmit = (e)=>{
         e.preventDefault()
         const body = new FormData(e.currentTarget)
@@ -32,7 +32,11 @@ function Register (){
             return res.json()
         })
         .then(data=>{
-                console.log('Account creato, si prega di controllare l\'email contenente il link di attivazione account per poter utilizzare il servizio');
+                navigate('/response',{
+                    state: {
+                        message: 'Account creato, si prega di controllare l\'email contenente il link di attivazione account per poter utilizzare il servizio'
+                    }
+                })
                 setErr(false); 
         })
         //handliamo gli errori qua settando lo stato err al txt dell'errore

@@ -1,11 +1,13 @@
 import { useState } from "react"
 import authServer from "./settings"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 
 function Forgot(){
     const [err, setErr] = useState()
     const [preventSubmit, setPreventSubmit] = useState(true)
     const [emailErr, setEmailErr] = useState()
+    let navigate = useNavigate()
+
     const handleSubmit = (e)=>{
         e.preventDefault()
         const body = new FormData(e.currentTarget)
@@ -27,7 +29,11 @@ function Forgot(){
         })
         .then(data=>{
                 setErr(false); 
-                //fa qualcosa pagina di successo
+                navigate('/response',{
+                    state: {
+                        message: 'Email di recupero password inviata, hai 15 minuti per utilizzare il link fornito e resettare la password'
+                    }
+                })
         })
         //handliamo gli errori qua settando lo stato err al txt dell'errore
         .catch(error=>setErr(error.message))
