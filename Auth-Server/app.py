@@ -110,6 +110,8 @@ def reset_password ():
 
 @app.route('/auth/login', methods=[ 'POST'])
 def login ():
+
+    #se l'user non è loggato deve dire se vuole richiedere un nuovo link di attivazione
     if request.method == 'POST':
         email = request.form.get('email')
         password = request.form.get('password')
