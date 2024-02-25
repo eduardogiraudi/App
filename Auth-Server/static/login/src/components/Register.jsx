@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react"
 import authServer from "./settings";
-function Register ({setSubmitBlock}){
+import LoginWithGoogle from "./LoginWithGoogle";
+import { Link } from "react-router-dom";
+
+
+function Register (){
     const [password, setPassword] = useState()
     const [confirmPassword, setConfirmPassword] = useState()
     const [username, setUsername] = useState()
@@ -8,6 +12,32 @@ function Register ({setSubmitBlock}){
     const [usernameErr, setUsernameErr] = useState()
     const [emailErr, setEmailErr] = useState()
     const [passwordErr, setPasswordErr] = useState()
+    const [submitBlock, setSubmitBlock] = useState(true)
+    const [err, setErr] = useState() //errori dopo che il form viene inviato
+
+    const handleSubmit = (e)=>{
+        e.preventDefault()
+        const body = new FormData(e.currentTarget)
+        let url = authServer+'/auth/register'
+        fetch(url, {
+            method: 'POST',
+            body: body
+        })
+        .then(res=>{
+            if(res.status!==200){
+                if(res.status===400) throw new Error('email non valida o password non corrispondente alle policy di sicurezza o le due password non sono identiche')
+                if(res.status===409) throw new Error('email o username già esistenti nel sistema')
+                if(res.status===500) throw new Error('errore interno del sistema, si prega di riprovare la registrazione')
+            }
+            return res.json()
+        })
+        .then(data=>{
+                console.log('Account creato, si prega di controllare l\'email contenente il link di attivazione account per poter utilizzare il servizio');
+                setErr(false); 
+        })
+        //handliamo gli errori qua settando lo stato err al txt dell'errore
+        .catch(error=>setErr(error.message))
+    }
 
     const usernameChange = async (e) => {
         try {
@@ -93,13 +123,19 @@ function Register ({setSubmitBlock}){
     },[password, confirmPassword,email,username, emailErr, usernameErr, passwordErr])
     return (
         <>
-            <input type="text" name='username' placeholder="username" onChange={usernameChange}/>
-            {usernameErr&&<div>{usernameErr}</div>}
-            <input type="email" name="email" placeholder="email" onChange={emailChange}/>
-            {emailErr&&<div>{emailErr}</div>}
-            <input type="password" name="password" onChange={handlePasswordChange} placeholder="password"/>
-            <input type="password" name="confirm_password" onChange={handleConfirmPasswordChange} placeholder="confirm password"/>
-            {passwordErr&&<div>{passwordErr}</div>}
+            <Link to={'/login'}>Hai già un account? Accedi</Link>
+            <form onSubmit={handleSubmit}>  
+                <input type="text" name='username' placeholder="username" onChange={usernameChange}/>
+                {usernameErr&&<div>{usernameErr}</div>}
+                <input type="email" name="email" placeholder="email" onChange={emailChange}/>
+                {emailErr&&<div>{emailErr}</div>}
+                <input type="password" name="password" onChange={handlePasswordChange} placeholder="password"/>
+                <input type="password" name="confirm_password" onChange={handleConfirmPasswordChange} placeholder="confirm password"/>
+                {passwordErr&&<div>{passwordErr}</div>}
+                <input type="submit" disabled={submitBlock?true:false}/>
+                {err&&<div>{err}</div>}
+            </form>
+            <LoginWithGoogle/>
         </>
     )
 }export default Register

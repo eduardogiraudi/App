@@ -31,7 +31,7 @@ function ActivateAccount (){
             setResponse(err.message)
             setError(true)
         })
-    })
+    },[])
     return (
         <>  
             {!token&& <div>Sembra che il link non sia valido, ricontrolla la mail o richiedine uno nuovo loggandoti</div>}
