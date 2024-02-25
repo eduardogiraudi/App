@@ -34,7 +34,7 @@ function ActivateAccount (){
     })
     return (
         <>  
-            {!token&& <div>Sembra che il link non sia valido, ricontrolla o richiedine uno nuovo provando a loggarti</div>}
+            {!token&& <div>Sembra che il link non sia valido, ricontrolla la mail o richiedine uno nuovo loggandoti</div>}
             {loading && token&& <div>Loading...</div>}
             {response && token && <div style={{'background':error?'red':'green'}}>{response}</div>}
             <Link to={'/login'}>torna al Login</Link>

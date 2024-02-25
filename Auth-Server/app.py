@@ -64,7 +64,7 @@ def require_reset_token ():
             token = str(user['_id'])
             token = serializer.dumps(token)
             #manda la mail e restituisce ok per dire al frontend per far visualizzare i diversi tipi di messaggio
-            msg = Message('Il tuo link di recupero', body=os.getenv('FRONTEND_DOMAIN')+'/change_password?token='+token, sender=os.getenv('MAIL_SENDER'), recipients=[email])
+            msg = Message('Il tuo link di recupero', body='il link scadrà tra 15 minuti '+os.getenv('FRONTEND_DOMAIN')+'/change_password?token='+token, sender=os.getenv('MAIL_SENDER'), recipients=[email])
             mail.send(msg)
             return Response(json.dumps({'message':'ok'}),status=200)
         else:
@@ -77,7 +77,16 @@ def reset_password ():
     #da mettere i controlli sulle nuove password anche qua poi
     try:
         token = request.form.get('token')
-        #deve gestire il cambio password nel body della request
+        password = request.form.get('password')
+        confirm_password = request.form.get('confirm_password')
+        
+        if confirm_password!=password:
+            return Response(json.dumps({'message':'password and confirm password do not match'}),status=400)
+        # policy.test returna un array vuoto se la pass rispetta i requirements, Passwordstats restituisce quanti match ci sono, quindi se non ci sono lettere minuscole i requirements non vengono rispettati
+        if password_policy.test(password) or (not PasswordStats(password).letters_lowercase):
+            return Response(json.dumps({'message':'password does not meet complexity requirements'}), status=400)
+
+
         serializer = URLSafeTimedSerializer(app.config['JWT_SECRET_KEY'])
         token_data = serializer.loads(token, max_age=900)
         salt = secrets.token_hex(16)
