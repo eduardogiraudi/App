@@ -25,7 +25,14 @@ function Register (){
         })
         .then(res=>{
             if(res.status!==200){
-                if(res.status===400) throw new Error('email non valida o password non corrispondente alle policy di sicurezza o le due password non sono identiche')
+                // if(res.status===400) throw new Error('email non valida o password non corrispondente alle policy di sicurezza o le due password non sono identiche')
+                if(res.status===400){return res.json().then(err=>{
+                    if(err.message==='invalid email'){
+                        throw new Error('email non valida')
+                    }else{
+                        throw new Error('password non valida')
+                    }
+                })}
                 if(res.status===409) throw new Error('email o username già esistenti nel sistema')
                 if(res.status===500) throw new Error('errore interno del sistema, si prega di riprovare la registrazione')
             }
@@ -34,7 +41,7 @@ function Register (){
         .then(data=>{
                 navigate('/response',{
                     state: {
-                        message: 'Account creato, si prega di controllare l\'email contenente il link di attivazione account per poter utilizzare il servizio'
+                        message: `Gentile ${data.message}, si prega di controllare l'email contenente il link di attivazione account per poter completare il processo di registrazione, se l'email non arriva richiedine una nuova tentando di loggarti`
                     }
                 })
                 setErr(false); 
@@ -49,13 +56,13 @@ function Register (){
             let val = e.target.value 
             setUsernameErr()
             if(val){
+                if(val.length<5){
+                    throw new Error("il nome utente deve essere lungo almeno 5 caratteri")
+                }
                 let http = await fetch(authServer+'/auth/user_exists?username='+val)
                     .then(res=>res.status);
                 if(http === 409){
                     throw new Error('nome utente non disponibile')
-                }
-                if(val.length<5){
-                    throw new Error("il nome utente deve essere lungo almeno 5 caratteri")
                 }
             }
 
@@ -70,13 +77,13 @@ function Register (){
             setEmailErr()
             let val = e.target.value
             if(val){
+                if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)){
+                    throw new Error('inserire una email valida')
+                }
                 let http = await fetch(authServer+'/auth/user_exists?email='+val)
                 .then(res=>res.status);
                 if(http === 409){
                     throw new Error('email non disponibile')
-                }
-                if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)){
-                    throw new Error('inserire una email valida')
                 }
             }
 

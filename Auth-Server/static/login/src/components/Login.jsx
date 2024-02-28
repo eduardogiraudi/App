@@ -14,11 +14,9 @@ function Login (){
         })
         .then(res=>{
             if(res.status!==200){
-                    if(res.status === 401){
-                        throw new Error('Password non corretta')
-                    }else if(res.status === 404){
-                        throw new Error('Utente non trovato o form non compilato correttamente')
-                    }
+                    if(res.status === 401)throw new Error('password non corretta')
+                    if(res.status === 404)throw new Error('utente non trovato o form non compilato correttamente')
+                    if(res.status === 422)throw new Error('l\'utente non è ancora verificato')
             }
             return res.json()
         })
@@ -45,6 +43,7 @@ function Login (){
             </form>
             {err&&<div>{err}</div>}
             <Link to='/forgot'>Hai dimenticato la password? Ripristinala</Link>
+            <Link to='/get_verification_link'>Non ti è arrivato il link di verifica oppure è scaduto?</Link>
             <LoginWithGoogle/>
         </>
         )

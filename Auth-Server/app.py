@@ -107,6 +107,27 @@ def reset_password ():
     #     return jsonify({'message': 'Invalid token'})
 
 
+@app.route('/auth/get_new_verification_link', methods=['POST'])
+def new_verification_link():
+    try:
+        email = request.form.get('email')
+        if email:
+            user = collection.find_one({'email':email})
+            if user:
+                serializer = URLSafeTimedSerializer(os.getenv('JWT_SECRET_KEY'))
+                token = str(user['_id'])
+                token = serializer.dumps(token)
+
+                msg = Message('Il tuo link di attivazione account', body='il link di attivazione sarà valido per 24 ore '+os.getenv('FRONTEND_DOMAIN')+'/activate_account?token='+token, sender=os.getenv('MAIL_SENDER'), recipients=[email])
+                mail.send(msg)
+                return Response(json.dumps({'message':'email sent'}), status=200)
+            else:
+                return Response(json.dumps({'message':'user not found'}),status=404)
+        else:
+            return Response(json.dumps({'message':'no email provided'}), status=400)
+    except:
+        return Response(json.dumps({'message':'internal server error'}), status=500)
+
 
 @app.route('/auth/login', methods=[ 'POST'])
 def login ():
@@ -117,6 +138,8 @@ def login ():
         password = request.form.get('password')
         real_user = collection.find_one({'email':email})
         if real_user:
+            if not real_user['active']:
+                return Response(json.dumps({'message':'user not verified'}), status=422)
             if hashing.check_value(real_user["password"],password, real_user["salt"]):
                 response = {
                     'email' : real_user['email'], #deve essere univoco
@@ -136,7 +159,7 @@ def login ():
 
 
 
-#PYMONGO DEMMERDA THROWA STATUS 404 SE UNO DEI DUE ARGOMENTI POSSIBILI è NULL, api da dividere in chech username e email
+#PYMONGO  THROWA STATUS 404 SE UNO DEI DUE ARGOMENTI POSSIBILI è NULL, api da dividere in chech username e email
 @app.route('/auth/user_exists', methods=['GET'])
 def user_exists():
     if(request.args.get('username')):
@@ -197,7 +220,7 @@ def register():
 
         msg = Message('Il tuo link di attivazione account', body='il link di attivazione sarà valido per 24 ore '+os.getenv('FRONTEND_DOMAIN')+'/activate_account?token='+token, sender=os.getenv('MAIL_SENDER'), recipients=[email])
         mail.send(msg)
-        return Response(json.dumps({'message': 'Account created'}),status=200)
+        return Response(json.dumps({'message': user['username']}),status=200)
     except EmailNotValidError as e:
         return Response(json.dumps({'message':'invalid email'}),status=400)
     except ValueError as ValErr:
@@ -222,6 +245,17 @@ def activate_account ():
         return Response(json.dumps({'message':'link expired, please request a new activation link'}), status=410)
     except BadSignature:
         return Response(json.dumps({'message':'invalid link'}), status=401)
+
+
+
+
+
+
+
+
+
+
+
 
 
 #rotta per ottenere un nuovo access token

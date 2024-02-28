@@ -9,5 +9,8 @@ services:
       - "27017:27017"
     volumes:
       - mongodb_data:/data/db
+    # prima creare un user così tipo poi mandare giù il db e decommentare: db.createUser({user: "admin",pwd: "admin_password",roles: [{ role: "userAdminAnyDatabase", db: "admin" }]})
+    # command: --auth 
+
 volumes:
   mongodb_data:
