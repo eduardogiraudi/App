@@ -31,7 +31,7 @@ function Forgot(){
                 setErr(false); 
                 navigate('/response',{
                     state: {
-                        message: 'Email di recupero password inviata, hai 15 minuti per utilizzare il link fornito e resettare la password'
+                        message: 'Email di recupero password inviata, hai 15 minuti per utilizzare il link fornito via email e resettare la password'
                     }
                 })
         })
