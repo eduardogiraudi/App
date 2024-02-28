@@ -6,7 +6,7 @@ import './css/index.css'
 const root = ReactDOM.createRoot(document.getElementById('root'));
 
 root.render(
-  <React.StrictMode>
+  // <React.StrictMode> fa doppie chiamate api
     <App/>
-  </React.StrictMode>
+  // </React.StrictMode>
 );

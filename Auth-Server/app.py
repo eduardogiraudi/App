@@ -35,7 +35,7 @@ app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
 app.config['MAIL_USE_TLS'] = True
 app.config['MAIL_USE_SSL'] = False
 mail = Mail(app)
-logging.basicConfig(filename='./logs/errors.log', level=logging.ERROR)
+# logging.basicConfig(filename='./logs/errors.log', level=logging.ERROR)
 #collezione di utenti mongodb
 db = client['users']
 collection = db['users']
