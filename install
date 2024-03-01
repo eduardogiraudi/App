@@ -1,0 +1,38 @@
+#!/bin/bash
+
+# Funzione per ottenere il percorso assoluto dello script
+get_script_dir() {
+  SOURCE="${BASH_SOURCE[0]}"
+  while [ -h "$SOURCE" ]; do
+    DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+    SOURCE="$(readlink "$SOURCE")"
+    [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
+  done
+  DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+  echo "$DIR"
+}
+
+
+
+# Ottieni il percorso del progetto
+project_dir=$(get_script_dir)
+
+# Funzione per aprire un nuovo terminale e eseguire il comando in background
+open_terminal() {
+    osascript -e "tell application \"Terminal\" to do script \"cd $project_dir; $1\""
+}
+
+
+
+echo "Installo le dipendenze"
+cd Auth-Server; pipenv install; cd static/login; npm install; cd ..; cd ..; cd ..; 
+               cd OTP-Server; pipenv install; cd static/otp; npm install; cd ..; cd ..; cd ..;
+               cd Resource-Server; pipenv install; cd static/app; npm install;
+
+  
+
+# Attendi un po' prima di avviare il server successivo
+
+echo "dipendenze installate, chiusura terminale in 3 secondi"
+sleep 3
+exit;
