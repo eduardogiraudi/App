@@ -1,2 +1,3 @@
 Flask==3.0.2
 Flask_JWT_Extended==4.6.0
+python-dotenv==1.0.0

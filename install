@@ -33,6 +33,6 @@ cd Auth-Server; pipenv install; cd static/login; npm install; cd ..; cd ..; cd .
 
 # Attendi un po' prima di avviare il server successivo
 
-echo "dipendenze installate, chiusura terminale in 3 secondi"
-sleep 3
+echo "dipendenze installate"
+
 exit;
