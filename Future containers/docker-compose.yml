@@ -1,0 +1,52 @@
+version: '3'
+services:
+  authentication:
+    build:
+      context: .
+      dockerfile: Dockerfile.auth
+    container_name: auth_container
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mongodb
+    env_file:
+      - .env
+      - Auth-Server/Auth.env
+  otp:
+    build:
+      context: .
+      dockerfile: Dockerfile.otp
+    container_name: otp_container
+    ports:
+      - "5002:5002"
+    depends_on:
+      - mongodb
+    env_file:
+      - .env
+      - OTP-Server/OTP.env
+
+  resources:
+    build:
+      context: .
+      dockerfile: Dockerfile.resources
+    container_name: resources_container
+    ports:
+      - "5001:5001"
+    depends_on:
+      - mongodb
+    env_file:
+      - .env
+  mongodb:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mongodb_container
+    ports:
+      - "27017:27017"
+    expose:
+      - "27017"
+    volumes:
+      - mongodb_data:/data/db
+
+volumes:
+  mongodb_data:

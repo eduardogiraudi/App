@@ -1,0 +1,18 @@
+# Usa un'immagine di Python come base
+FROM python:3.8
+
+# Imposta la directory di lavoro nel container
+WORKDIR /Auth-Server/
+
+# Copia i file necessari nel container
+COPY /requirements.txt .
+COPY /Auth-Server/app.py .
+
+# Installa le dipendenze
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Esponi la porta del server di autenticazione (puoi decidere di gestire questo tramite docker-compose)
+# EXPOSE 8080
+
+# Comando di avvio del server di autenticazione
+CMD ["python", "app.py"]
