@@ -1,4 +1,19 @@
-from imports.imports import *
+from flask import Flask, json, Response, request, url_for, redirect, make_response
+from flask_pymongo import MongoClient
+from flask_hashing import Hashing
+import secrets
+from bson.json_util import dumps 
+from bson import ObjectId
+from flask_jwt_extended import JWTManager, create_access_token, create_refresh_token, get_jwt_identity, jwt_required
+from dotenv import load_dotenv
+import os
+from datetime import timedelta, datetime
+from authlib.integrations.flask_client import OAuth
+from flask_cors import CORS
+from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
+from flask_mail import Mail, Message
+from email_validator import validate_email, EmailNotValidError
+from password_strength import PasswordPolicy, PasswordStats
 
 
 
@@ -35,7 +50,7 @@ app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
 app.config['MAIL_USE_TLS'] = True
 app.config['MAIL_USE_SSL'] = False
 mail = Mail(app)
-# logging.basicConfig(filename='./logs/errors.log', level=logging.ERROR)
+
 #collezione di utenti mongodb
 db = client['users']
 collection = db['users']

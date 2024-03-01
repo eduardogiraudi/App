@@ -1,0 +1,5 @@
+Flask==3.0.2
+Flask_Hashing==1.1
+Flask_JWT_Extended==4.6.0
+Flask_PyMongo==2.3.0
+twilio==9.0.0
