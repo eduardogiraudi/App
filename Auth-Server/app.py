@@ -14,6 +14,8 @@ from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 from flask_mail import Mail, Message
 from email_validator import validate_email, EmailNotValidError
 from password_strength import PasswordPolicy, PasswordStats
+import redis
+import base64
 
 
 
@@ -51,12 +53,17 @@ app.config['MAIL_USE_TLS'] = True
 app.config['MAIL_USE_SSL'] = False
 mail = Mail(app)
 
+
+
+
+
+ 
 #collezione di utenti mongodb
 db = client['users']
 collection = db['users']
 #rotta di login
 
-
+redis_client = redis.StrictRedis(host='localhost', port=6379, decode_responses=True)
 
 
 password_policy = PasswordPolicy.from_names(
@@ -233,8 +240,11 @@ def register():
         token = str(insert.inserted_id)
         token = serializer.dumps(token)
 
-        msg = Message('Il tuo link di attivazione account', body='il link di attivazione sarà valido per 24 ore '+os.getenv('FRONTEND_DOMAIN')+'/activate_account?token='+token, sender=os.getenv('MAIL_SENDER'), recipients=[email])
-        mail.send(msg)
+        # msg = Message('Il tuo link di attivazione account', body='il link di attivazione sarà valido per 24 ore '+os.getenv('FRONTEND_DOMAIN')+'/activate_account?token='+token, sender=os.getenv('MAIL_SENDER'), recipients=[email])
+        # mail.send(msg)
+        redis_client.rpush('email','test@test.test' + email + 'il tuo link di attivazione' + f'il link di attivazione sarà valido per 24 ore {os.getenv('FRONTEND_DOMAIN')}/activate_account?token={token}')
+        
+
         return Response(json.dumps({'message': user['username']}),status=200)
     except EmailNotValidError as e:
         return Response(json.dumps({'message':'invalid email'}),status=400)
@@ -344,3 +354,5 @@ def authorize():
         #altrimenti redirect a pagina "di login"
         return redirect('/')
     
+
+

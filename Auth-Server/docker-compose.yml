@@ -3,12 +3,20 @@ services:
   mongodb:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.mongo
     container_name: mongodb_users
     ports:
       - "27017:27017"
     volumes:
       - mongodb_data:/data/db
+  redis:
+    build:
+      context: .
+      dockerfile: Dockerfile.redis
+    container_name: redis
+    ports: 
+      - "6380:6380"
+
     # prima creare un user così tipo poi mandare giù il db e decommentare: db.createUser({user: "admin",pwd: "admin_password",roles: [{ role: "userAdminAnyDatabase", db: "admin" }]})
     # command: --auth 
 
