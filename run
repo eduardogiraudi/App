@@ -22,18 +22,20 @@ open_terminal() {
     osascript -e "tell application \"Terminal\" to do script \"cd $project_dir; $1\""
 }
 
-echo "Avvio il server di autenticazione"
-open_terminal "source .venv/bin/activate; cd Auth-Server; flask --debug run --port 8080"
 
-# Attendi un po' prima di avviare il server successivo
-sleep 1
+
+
 
 echo "Avvio MongoDB"
-open_terminal "source .venv/bin/activate; cd Auth-Server; docker compose up"
+open_terminal "cd Auth-Server; docker compose up"
 
-# Avvio del server npm in un secondo terminale separato
+echo "Avvio il server di autenticazione"
+open_terminal "cd Auth-Server; cd static/login;npm start"
+open_terminal "cd Auth-Server; pipenv run flask --debug run --port 8080"
 echo "Avvio il resource server"
-open_terminal "source .venv/bin/activate; cd Resource-Server; flask --debug run --port 5001"
+open_terminal "cd Auth-Server; cd static/app;npm start"
+open_terminal "cd Resource-Server;pipenv run flask --debug run --port 5001"
 echo "Avvio l'OTP server"
-open_terminal "source .venv/bin/activate; cd OTP-Server; flask --debug run"
+open_terminal "cd Auth-Server; cd static/otp;npm start"
+open_terminal "cd OTP-Server; cd static/otp;npm start; pipenv run flask --debug run"
 echo "Tutti i server avviati"

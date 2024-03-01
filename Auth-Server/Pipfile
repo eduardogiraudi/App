@@ -16,6 +16,7 @@ itsdangerous = "==2.1.2"
 password-strength = "==0.0.3.post2"
 pymongo = "==4.6.1"
 python-dotenv = "==1.0.0"
+requests= "==2.31.0"
 
 [dev-packages]
 
