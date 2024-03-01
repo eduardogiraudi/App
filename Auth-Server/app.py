@@ -314,6 +314,8 @@ def authorize():
                 'username': profile['given_name'],
                 'propic': profile['picture']
             })
+        else:
+            pass #se l'utente è già entrato in precedenza con google
         response = make_response(redirect(os.getenv('FRONTEND_DOMAIN')))
         response.set_cookie('token', create_access_token(profile['sub'],expires_delta=expires)) 
         response.set_cookie('refresh_token', create_refresh_token(profile['sub'],expires_delta=expires)) 
