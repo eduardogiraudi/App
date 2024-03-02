@@ -26,17 +26,17 @@ open_terminal() {
 
 
 
-echo "Avvio MongoDB"
-open_terminal "cd Auth-Server; docker compose up"
+echo "Avvio MongoDB e Redis"
+open_terminal "docker compose up"
 echo "Avvio l'email server"
 open_terminal "cd Email-Server; pipenv run python3 app.py"
 echo "Avvio il server di autenticazione"
-open_terminal "cd Auth-Server; cd static/login;npm start"
+open_terminal "cd Auth-Server; cd login;npm start"
 open_terminal "cd Auth-Server; pipenv run flask --debug run --port 8080"
 echo "Avvio il resource server"
-open_terminal "cd Auth-Server; cd static/app;npm start"
+open_terminal "cd Auth-Server; cd app;npm start"
 open_terminal "cd Resource-Server;pipenv run flask --debug run --port 5001"
 echo "Avvio l'OTP server"
-open_terminal "cd Auth-Server; cd static/otp;npm start"
-open_terminal "cd OTP-Server; cd static/otp;npm start; pipenv run flask --debug run"
+open_terminal "cd Auth-Server; cd otp;npm start"
+open_terminal "cd OTP-Server; cd otp;npm start; pipenv run flask --debug run"
 echo "Tutti i server avviati"

@@ -1,4 +1,4 @@
-from flask import Flask, json, Response, request, url_for, redirect, make_response
+from flask import Flask, json, Response, request, url_for, redirect, make_response, render_template
 from flask_pymongo import MongoClient
 from flask_hashing import Hashing
 import secrets
@@ -20,10 +20,26 @@ import redis
 expires = timedelta(minutes=15)
 load_dotenv('../.env')  # Carica le variabili d'ambiente da .env
 load_dotenv('./Auth.env')
-app = Flask(__name__)
+app = Flask(__name__, template_folder='./login/build/', static_folder='./login/build/static/')
 oauth = OAuth(app)
 
+
+
+'''
+
+ROTTE DI FRONTEND SERVE
+
+'''
+
+import serve
+
+
+
+
 CORS(app)
+
+
+
 
 ## runnarla con flask --debug run --port 8080 (non va la porta 5000 per mac per il localhost e serve il dominio localhost per oauth di facebook in fase di sviluppo)
 google = oauth.register(
@@ -312,12 +328,7 @@ def refresh_token():
 
 
 
-#oAuth google
-    
-#mostra bottone di login esempio di view html 
-@app.route('/')
-def index():
-    return '<a href="/auth/google/login">Login con Google</a>'
+
 
 
 #ottengo il token
