@@ -15,7 +15,6 @@ from flask_mail import Mail, Message
 from email_validator import validate_email, EmailNotValidError
 from password_strength import PasswordPolicy, PasswordStats
 import redis
-import base64
 
 
 
@@ -63,6 +62,7 @@ db = client['users']
 collection = db['users']
 #rotta di login
 
+
 redis_client = redis.StrictRedis(host='localhost', port=6380, decode_responses=True)
 
 
@@ -92,7 +92,8 @@ def require_reset_token ():
                 'sender': os.getenv('MAIL_SENDER'),
                 'to': email,
                 'subject': 'Il tuo link di recupero',
-                'text': 'il link scadrà tra 15 minuti '+os.getenv('FRONTEND_DOMAIN')+'/change_password?token='+token
+                'text': 'il link scadrà tra 15 minuti '+os.getenv('FRONTEND_DOMAIN')+'/change_password?token='+token,
+                'html': f'<div>il link di recupero password scadrà tra 15 minuti: <a href="{os.getenv('FRONTEND_DOMAIN')+'/change_password?token='+token}" target="_blank">Link di recupero</a></div>'
             }
             redis_client.lpush('email',json.dumps(email_object))
             
@@ -152,7 +153,9 @@ def new_verification_link():
                         'sender': os.getenv('MAIL_SENDER'),
                         'to': email,
                         'subject': 'Il tuo link di attivazione account',
-                        'text': 'il link di attivazione sarà valido per 24 ore '+os.getenv('FRONTEND_DOMAIN')+'/activate_account?token='+token
+                        'text': 'il link di attivazione sarà valido per 24 ore '+os.getenv('FRONTEND_DOMAIN')+'/activate_account?token='+token,
+                        'html': f'<div>il link di attivazione sarà valido per 24 ore: <a href="{os.getenv('FRONTEND_DOMAIN')+'/activate_account?token='+token}" target="_blank">Link di attivazione</a></div>'
+
                     }
                     redis_client.lpush('email',json.dumps(email_object))
                     return Response(json.dumps({'message':'email sent'}), status=200)
@@ -258,7 +261,8 @@ def register():
             'sender': os.getenv('MAIL_SENDER'),
             'to': email,
             'subject': 'il tuo link di attivazione',
-            'text': f'il link di attivazione sarà valido per 24 ore {os.getenv('FRONTEND_DOMAIN')}/activate_account?token={token}'
+            'text': f'il link di attivazione sarà valido per 24 ore {os.getenv('FRONTEND_DOMAIN')}/activate_account?token={token}',
+            'html': f'<div>il link di attivazione sarà valido per 24 ore: <a href="{os.getenv('FRONTEND_DOMAIN')+'/activate_account?token='+token}" target="_blank">Link di attivazione</a></div>'
         }
         redis_client.lpush('email',json.dumps(email_object))
         
