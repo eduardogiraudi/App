@@ -27,3 +27,9 @@ per ora serve per le code email, i vari server pushano nuovi dati in coda e l'em
 la porta è 6380
 ### Email server
 Uno script python vanilla che ascolta in loop infinito la coda redis cercando nuove chiavi email, quando le trova le deserializza e invia le email con i loro dati, aumenta la scalabilità dei server che necessitano l'invio di email
+
+
+
+## Istruzioni di build e deploy
+### Auth-Server
+sostituire nell'env react SOLO l'indirizzo dell'auth server a stringa vuota, gli altri indirizzi metterci poi i sottodomini corretti del deploy. su google console andare a cambiare l'url dell'app per autorizzarla all'Oauth
