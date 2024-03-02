@@ -31,9 +31,6 @@ def send_email(sender,to, subject, text, html):
     print(sender, to, subject, text)
 
 
-
-
-
 def listen_queue():
     while True:
         email = redis_client.brpop('email')[1]
@@ -42,14 +39,5 @@ def listen_queue():
             send_email(email['sender'],email['to'],email['subject'],email['text'], email['html'])
 
 
-
-
-
-    
-
 if __name__ == '__main__':
     listen_queue()
-
-
-
-

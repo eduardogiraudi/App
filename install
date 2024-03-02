@@ -25,6 +25,7 @@ open_terminal() {
 
 
 echo "Installo le dipendenze"
+cd Email-Server; pipenv install; cd ..; 
 cd Auth-Server; pipenv install; cd static/login; npm install; cd ..; cd ..; cd ..; 
                cd OTP-Server; pipenv install; cd static/otp; npm install; cd ..; cd ..; cd ..;
                cd Resource-Server; pipenv install; cd static/app; npm install;
