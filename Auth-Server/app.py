@@ -11,7 +11,6 @@ from datetime import timedelta, datetime
 from authlib.integrations.flask_client import OAuth
 from flask_cors import CORS
 from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
-from flask_mail import Mail, Message
 from email_validator import validate_email, EmailNotValidError
 from password_strength import PasswordPolicy, PasswordStats
 import redis
@@ -44,17 +43,6 @@ hashing = Hashing(app)
 jwt = JWTManager(app)
 app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
 app.config['SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
-app.config['MAIL_SERVER']=os.getenv('MAIL_SERVER')
-app.config['MAIL_PORT'] = os.getenv('MAIL_PORT')
-app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
-app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
-app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USE_SSL'] = False
-mail = Mail(app)
-
-
-
-
 
  
 #collezione di utenti mongodb
