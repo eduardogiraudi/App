@@ -14,11 +14,17 @@ services:
       context: .
       dockerfile: Dockerfile.redis
     container_name: redis
+    command: --port 6380
     ports: 
       - "6380:6380"
+    volumes:
+      - type: volume
+        source: redis-data
+        target: /data
 
     # prima creare un user così tipo poi mandare giù il db e decommentare: db.createUser({user: "admin",pwd: "admin_password",roles: [{ role: "userAdminAnyDatabase", db: "admin" }]})
     # command: --auth 
 
 volumes:
   mongodb_data:
+  redis-data: {}

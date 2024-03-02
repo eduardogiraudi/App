@@ -63,7 +63,7 @@ db = client['users']
 collection = db['users']
 #rotta di login
 
-redis_client = redis.StrictRedis(host='localhost', port=6379, decode_responses=True)
+redis_client = redis.StrictRedis(host='localhost', port=6380, decode_responses=True)
 
 
 password_policy = PasswordPolicy.from_names(
@@ -85,9 +85,17 @@ def require_reset_token ():
         if user:
             token = str(user['_id'])
             token = serializer.dumps(token)
-            #manda la mail e restituisce ok per dire al frontend per far visualizzare i diversi tipi di messaggio
-            msg = Message('Il tuo link di recupero', body='il link scadrà tra 15 minuti '+os.getenv('FRONTEND_DOMAIN')+'/change_password?token='+token, sender=os.getenv('MAIL_SENDER'), recipients=[email])
-            mail.send(msg)
+            #manda in coda l'email e restituisce ok per dire al frontend per far visualizzare i diversi tipi di messaggio
+
+
+            email_object = {
+                'sender': os.getenv('MAIL_SENDER'),
+                'to': email,
+                'subject': 'Il tuo link di recupero',
+                'text': 'il link scadrà tra 15 minuti '+os.getenv('FRONTEND_DOMAIN')+'/change_password?token='+token
+            }
+            redis_client.lpush('email',json.dumps(email_object))
+            
             return Response(json.dumps({'message':'ok'}),status=200)
         else:
             return Response(json.dumps({'message':'User not found'}),status=404)
@@ -136,13 +144,20 @@ def new_verification_link():
         if email:
             user = collection.find_one({'email':email})
             if user:
-                serializer = URLSafeTimedSerializer(os.getenv('JWT_SECRET_KEY'))
-                token = str(user['_id'])
-                token = serializer.dumps(token)
-
-                msg = Message('Il tuo link di attivazione account', body='il link di attivazione sarà valido per 24 ore '+os.getenv('FRONTEND_DOMAIN')+'/activate_account?token='+token, sender=os.getenv('MAIL_SENDER'), recipients=[email])
-                mail.send(msg)
-                return Response(json.dumps({'message':'email sent'}), status=200)
+                if not user['active']:
+                    serializer = URLSafeTimedSerializer(os.getenv('JWT_SECRET_KEY'))
+                    token = str(user['_id'])
+                    token = serializer.dumps(token)
+                    email_object = {
+                        'sender': os.getenv('MAIL_SENDER'),
+                        'to': email,
+                        'subject': 'Il tuo link di attivazione account',
+                        'text': 'il link di attivazione sarà valido per 24 ore '+os.getenv('FRONTEND_DOMAIN')+'/activate_account?token='+token
+                    }
+                    redis_client.lpush('email',json.dumps(email_object))
+                    return Response(json.dumps({'message':'email sent'}), status=200)
+                else:
+                    return Response(json.dumps({'message':'account is already active'}), status=400)
             else:
                 return Response(json.dumps({'message':'user not found'}),status=404)
         else:
@@ -239,10 +254,13 @@ def register():
         serializer = URLSafeTimedSerializer(os.getenv('JWT_SECRET_KEY'))
         token = str(insert.inserted_id)
         token = serializer.dumps(token)
-
-        # msg = Message('Il tuo link di attivazione account', body='il link di attivazione sarà valido per 24 ore '+os.getenv('FRONTEND_DOMAIN')+'/activate_account?token='+token, sender=os.getenv('MAIL_SENDER'), recipients=[email])
-        # mail.send(msg)
-        redis_client.rpush('email','test@test.test' + email + 'il tuo link di attivazione' + f'il link di attivazione sarà valido per 24 ore {os.getenv('FRONTEND_DOMAIN')}/activate_account?token={token}')
+        email_object = {
+            'sender': os.getenv('MAIL_SENDER'),
+            'to': email,
+            'subject': 'il tuo link di attivazione',
+            'text': f'il link di attivazione sarà valido per 24 ore {os.getenv('FRONTEND_DOMAIN')}/activate_account?token={token}'
+        }
+        redis_client.lpush('email',json.dumps(email_object))
         
 
         return Response(json.dumps({'message': user['username']}),status=200)

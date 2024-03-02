@@ -20,8 +20,15 @@ function GetVerificationLink(){
         .then(res=>{
             if(res.status!==200){
                     if(res.status === 404) throw new Error('utente non trovato')
-                    if(res.status === 400) throw new Error('si prega di completare il form di reset per poter completare l\'azione')
-                    if(res.status === 400) throw new Error('non hai fornito un\'email')
+                    // if(res.status === 400) throw new Error('si prega di completare il form di reset per poter completare l\'azione')
+                    
+                    if(res.status === 400) {
+                        return res.json().then(error=>{
+                            if(error.message==='account is already active') throw new Error('l\'account è già attivato')
+                            else if(error.message==='no email provided') throw new Error('non hai fornito un\'email o l\'email non è valida')
+                        
+                        })
+                    }
                     if(res.status === 500) throw new Error('errore interno, se il problema persiste riprovare più tardi')
             }
             return res.json()
