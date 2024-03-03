@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import authServer from "./settings";
+import {authServer} from "./settings";
 import LoginWithGoogle from "./LoginWithGoogle";
 import { Link, useNavigate } from "react-router-dom";
 

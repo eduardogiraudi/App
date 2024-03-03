@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import authServer from "./settings";
+import {authServer} from "./settings";
 import { useEffect, useState } from "react";
 // far gestire a flask l'authorization header, è più sicuro così
 function ActivateAccount (){
@@ -32,7 +32,7 @@ function ActivateAccount (){
             setResponse(err.message)
             setError(true)
         })
-    })
+    },[])
     return (
         <>  
             <Link to={'/login'}>torna al Login</Link>

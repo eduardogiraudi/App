@@ -1,5 +1,5 @@
 import { useState } from "react"
-import authServer from "./settings"
+import {authServer} from "./settings"
 import { Link, useNavigate } from "react-router-dom"
 
 function Forgot(){

@@ -78,7 +78,7 @@ def require_reset_token ():
         email = request.form.get('email')
         user = collection.find_one({'email':email})
         if user:
-            if user['google_id']:
+            if 'google_id' in user:
                 return Response(json.dumps({'message':'accounts registered wuth google cannot reset password'}), status=422)
             if user['active']:
                 token = str(user['_id'])
@@ -149,7 +149,7 @@ def new_verification_link():
         if email:
             user = collection.find_one({'email':email})
             if user:
-                if user['google_id']:
+                if 'google_id' in user:
                     return Response(json.dumps({'message':'user registered with google'}), 422)
                 if not user['active']:
                     serializer = URLSafeTimedSerializer(os.getenv('JWT_SECRET_KEY'))
@@ -184,7 +184,7 @@ def login ():
         password = request.form.get('password')
         real_user = collection.find_one({'email':email})
         if real_user:
-            if real_user['google_id']:
+            if 'google_id' in real_user:
                 return Response(json.dumps({'message':'user registered with google'}), status=422)
             if not real_user['active']:
                 return Response(json.dumps({'message':'user not verified'}), status=409)
@@ -233,7 +233,7 @@ def register():
         confirm_password = request.form.get('confirm_password')
         email = request.form.get('email')
 
-        if collection.find_one({'email':email})['google_id']:
+        if 'google_id' in collection.find_one({'email':email}): #testare
             return Response(json.dumps({'message':'user already registered with google account'}), status=422)
 
         if collection.find_one({'username':username}):
@@ -311,9 +311,10 @@ def refresh_token():
     try:
         current_user = get_jwt_identity()
         new_access_token = create_access_token(identity=current_user, expires_delta=expires)
+        # new_refresh_token = create_refresh_token(identity=current_user)
         return Response(json.dumps({'message':new_access_token}), status=200)
     except ValueError as ValErr:
-        app.logger.error(str(ValErr))
+        # app.logger.error(str(ValErr))
         return Response(json.dumps({'message': 'Invalid token or internal server error'}), status=401)
     
 

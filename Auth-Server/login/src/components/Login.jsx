@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom"
 import LoginWithGoogle from "./LoginWithGoogle"
-import authServer from "./settings";import { useState } from "react";
+import {authServer, resourceServer} from "./settings";import { useState } from "react";
 ;
 function Login (){
     const [err, setErr] = useState()
@@ -26,7 +26,8 @@ function Login (){
                 document.cookie = `refresh_token=${data.message.refresh_token}`
                 // redirectare in homepage (il frontend del resource server)
                 // window.location.href = 'http://localhost:8080/'
-                console.log(data);
+                // console.log(data);
+                window.location.href = resourceServer
 
                 setErr(false); 
     

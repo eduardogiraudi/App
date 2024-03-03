@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import authServer from "./settings";
+import {authServer} from "./settings";
 import { useEffect, useState } from "react";
 
 // far gestire a flask l'authorization header, è più sicuro così

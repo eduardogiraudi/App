@@ -1,4 +1,4 @@
-import authServer from "./settings";
+import {authServer} from "./settings";
 function LoginWithGoogle(){
     const handleGoogleOAuth = (e)=>{
         window.location.href = authServer+'/auth/google/login'
