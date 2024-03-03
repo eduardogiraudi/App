@@ -1,4 +1,8 @@
 # Usa l'immagine ufficiale di MongoDB
 FROM mongo
-# Esponi la porta 27017 (default di MongoDB)
-EXPOSE 27017
+
+# Copia lo script di inizializzazione nella cartella /docker-entrypoint-initdb.d/
+# COPY init-user.js /docker-entrypoint-initdb.d/
+
+# Abilita l'autenticazione
+# CMD ["mongod", "--auth"]

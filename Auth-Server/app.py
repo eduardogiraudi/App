@@ -31,6 +31,7 @@ ROTTE DI FRONTEND SERVE
 
 '''
 
+
 import serve
 
 
@@ -54,7 +55,8 @@ google = oauth.register(
     redirect_uri='http://127.0.0.1:8080/auth/google/authorize',
     client_kwargs={'scope': 'email profile'},
 )
-client = MongoClient(os.getenv('MONGO_HOST'), int(os.getenv('MONGO_PORT')))
+client = MongoClient(f'mongodb://{os.getenv('MONGO_USER')}:{os.getenv('MONGO_PASSWORD')}@{os.getenv('MONGO_HOST')}:{os.getenv('MONGO_PORT')}/')
+
 hashing = Hashing(app)
 jwt = JWTManager(app)
 app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
