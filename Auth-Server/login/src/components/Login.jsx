@@ -16,7 +16,8 @@ function Login (){
             if(res.status!==200){
                     if(res.status === 401)throw new Error('password non corretta')
                     if(res.status === 404)throw new Error('utente non trovato o form non compilato correttamente')
-                    if(res.status === 422)throw new Error('l\'utente non è ancora verificato')
+                    if(res.status === 422)throw new Error('l\'utente è registrato con google, si prega di utilizzare l\'apposito bottone')
+                    if(res.status === 409)throw new Error('l\'utente non è ancora verificato')
             }
             return res.json()
         })

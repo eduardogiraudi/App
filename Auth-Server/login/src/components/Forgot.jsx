@@ -19,11 +19,10 @@ function Forgot(){
         })
         .then(res=>{
             if(res.status!==200){
-                    if(res.status ===404){
-                        throw new Error('utente non trovato'); 
-                    }else if(res.status === 400){
-                        throw new Error('si prega di completare il form di reset per poter completare l\'azione')
-                    }
+                    if(res.status === 404) throw new Error('utente non trovato');
+                    if(res.status === 400) throw new Error('si prega di completare il form di reset per poter completare l\'azione')
+                    if(res.status === 409) throw new Error('l\'utente non è attivo, se l\'email è scaduta o non è arrivata richiederne una nuova')
+                    if(res.status === 422) throw new Error('l\'account è associato a un account Google, questo tipo di login non permette un cambio password')
             }
             return res.json()
         })

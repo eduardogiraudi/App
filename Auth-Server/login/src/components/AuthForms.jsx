@@ -7,6 +7,7 @@ import Register from "./Register";
 import ActivateAccount from "./ActivateAccount";
 import Response from './Response'
 import GetVerificationLink from './GetVerificationLink';
+import NotFound from './NotFound';
 function AuthForms(){
     return (
         <>
@@ -20,6 +21,8 @@ function AuthForms(){
                         <Route path="/activate_account" element={<ActivateAccount/>}/>
                         <Route path='/get_verification_link' element={<GetVerificationLink/>}/>
                         <Route path="/response" element={<Response/>}/>
+                        {/* fallback */}
+                        <Route path='*' element={<NotFound/>}  />
                     </Routes>                
             </Router>
         </>

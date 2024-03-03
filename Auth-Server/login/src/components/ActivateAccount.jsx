@@ -25,13 +25,14 @@ function ActivateAccount (){
             if(res.status===409) throw new Error('L\'account è già stato attivato')
             if(res.status===410) throw new Error('il link di attivazione è scaduto, richiedine uno nuovo loggandoti')
             if(res.status===401) throw new Error('il link di attivazione non è valido o non è del tutto completo')
+            if(res.status===404) throw new Error('utente inesistente')
             
         })
         .catch((err)=>{
             setResponse(err.message)
             setError(true)
         })
-    },[])
+    })
     return (
         <>  
             <Link to={'/login'}>torna al Login</Link>

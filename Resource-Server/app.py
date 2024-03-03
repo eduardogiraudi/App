@@ -3,7 +3,7 @@ from flask_jwt_extended import JWTManager, get_jwt_identity, jwt_required
 from dotenv import load_dotenv
 import os
 
-load_dotenv('../')  # Carica le variabili d'ambiente da .env
+load_dotenv('.env')  # Carica le variabili d'ambiente da .env
 
 app = Flask(__name__)
 

@@ -21,7 +21,7 @@ function GetVerificationLink(){
             if(res.status!==200){
                     if(res.status === 404) throw new Error('utente non trovato')
                     // if(res.status === 400) throw new Error('si prega di completare il form di reset per poter completare l\'azione')
-                    
+                    if(res.status === 422) throw new Error('il tuo account è legato al tuo account Google, non puoi richiedere un link di verifica')
                     if(res.status === 400) {
                         return res.json().then(error=>{
                             if(error.message==='account is already active') throw new Error('l\'account è già attivato')

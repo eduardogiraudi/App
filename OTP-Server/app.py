@@ -9,14 +9,15 @@ from twilio.rest import Client
 from flask_pymongo import MongoClient
 import secrets
 
-load_dotenv('../.env')  # Carica le variabili d'ambiente da .env
-load_dotenv('./OTP.env')
+
+load_dotenv('.env')
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
 app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY') 
 jwt = JWTManager(app)
 hashing = Hashing(app)
-mongoclient = MongoClient(os.getenv('MONGO_HOST'), int(os.getenv('MONGO_PORT')))
+client = MongoClient(f'mongodb://{os.getenv('MONGO_USER')}:{os.getenv('MONGO_PASSWORD')}@{os.getenv('MONGO_HOST')}:{os.getenv('MONGO_PORT')}/')
+
 
 
 def dynamic_secret_key(timestamp):

@@ -36,6 +36,7 @@ function ChangePassword (){
                 if(res.status===400) throw new Error('le password non coincidono o non corrispondono alle policy di sicurezza')
                 if(res.status===410) throw new Error('il link è scaduto, si prega di richiederne uno nuovo')
                 if(res.status===401) throw new Error('il link non è valido, si prega di ricontrollare e/o richiederne uno nuovo')
+                if(res.status===404) throw new Error('utente non trovato')
             }
         )
         .catch(err=>{

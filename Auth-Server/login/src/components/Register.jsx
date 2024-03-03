@@ -33,6 +33,7 @@ function Register (){
                         throw new Error('password non valida')
                     }
                 })}
+                if(res.status===422) throw new Error('l\'utente è già registrato con un account google')
                 if(res.status===409) throw new Error('email o username già esistenti nel sistema')
                 if(res.status===500) throw new Error('errore interno del sistema, si prega di riprovare la registrazione')
             }

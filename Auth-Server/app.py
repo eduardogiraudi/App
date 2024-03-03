@@ -15,14 +15,11 @@ from email_validator import validate_email, EmailNotValidError
 from password_strength import PasswordPolicy, PasswordStats
 import redis
 
-
-
 expires = timedelta(minutes=15)
-load_dotenv('../.env')  # Carica le variabili d'ambiente da .env
-load_dotenv('./Auth.env')
+load_dotenv('.env')  # Carica le variabili d'ambiente da .env
+
 app = Flask(__name__, template_folder='./login/build/', static_folder='./login/build/static/')
 oauth = OAuth(app)
-
 
 
 '''
@@ -31,15 +28,9 @@ ROTTE DI FRONTEND SERVE
 
 '''
 
-
 import serve
 
-
-
-
 CORS(app)
-
-
 
 
 ## runnarla con flask --debug run --port 8080 (non va la porta 5000 per mac per il localhost e serve il dominio localhost per oauth di facebook in fase di sviluppo)
@@ -69,7 +60,7 @@ collection = db['users']
 #rotta di login
 
 
-redis_client = redis.StrictRedis(host='localhost', port=6380, decode_responses=True, password=os.getenv('REDIS_PASSWORD'))
+redis_client = redis.StrictRedis(host=os.getenv('REDIS_HOST'), port=os.getenv('REDIS_PORT'), decode_responses=True, password=os.getenv('REDIS_PASSWORD'))
 
 
 password_policy = PasswordPolicy.from_names(
@@ -80,8 +71,6 @@ password_policy = PasswordPolicy.from_names(
 )
 
 
-
-
 @app.route('/auth/forgot_password', methods=['POST'])
 def require_reset_token (): 
     try:
@@ -89,21 +78,26 @@ def require_reset_token ():
         email = request.form.get('email')
         user = collection.find_one({'email':email})
         if user:
-            token = str(user['_id'])
-            token = serializer.dumps(token)
-            #manda in coda l'email e restituisce ok per dire al frontend per far visualizzare i diversi tipi di messaggio
+            if user['google_id']:
+                return Response(json.dumps({'message':'accounts registered wuth google cannot reset password'}), status=422)
+            if user['active']:
+                token = str(user['_id'])
+                token = serializer.dumps(token)
+                #manda in coda l'email e restituisce ok per dire al frontend per far visualizzare i diversi tipi di messaggio
 
 
-            email_object = {
-                'sender': os.getenv('MAIL_SENDER'),
-                'to': email,
-                'subject': 'Il tuo link di recupero',
-                'text': 'il link scadrà tra 15 minuti '+os.getenv('FRONTEND_DOMAIN')+'/change_password?token='+token,
-                'html': f'<div>il link di recupero password scadrà tra 15 minuti: <a href="{os.getenv('FRONTEND_DOMAIN')+'/change_password?token='+token}" target="_blank">Link di recupero</a></div>'
-            }
-            redis_client.lpush('email',json.dumps(email_object))
-            
-            return Response(json.dumps({'message':'ok'}),status=200)
+                email_object = {
+                    'sender': os.getenv('MAIL_SENDER'),
+                    'to': email,
+                    'subject': 'Il tuo link di recupero',
+                    'text': 'il link scadrà tra 15 minuti '+os.getenv('FRONTEND_DOMAIN')+'/change_password?token='+token,
+                    'html': f'<div>il link di recupero password scadrà tra 15 minuti: <a href="{os.getenv('FRONTEND_DOMAIN')+'/change_password?token='+token}" target="_blank">Link di recupero</a></div>'
+                }
+                redis_client.lpush('email',json.dumps(email_object))
+                
+                return Response(json.dumps({'message':'ok'}),status=200)
+            else:
+                return Response(json.dumps({'message':'user not active'}), status=409)
         else:
             return Response(json.dumps({'message':'User not found'}),status=404)
     except ValueError as er: 
@@ -127,6 +121,10 @@ def reset_password ():
         serializer = URLSafeTimedSerializer(app.config['JWT_SECRET_KEY'])
         token_data = serializer.loads(token, max_age=900)
         salt = secrets.token_hex(16)
+
+        if not collection.find_one({'_id': ObjectId(token_data)}):
+            return Response(json.dumps({'message':'user not found'}),status=404)
+
         password = hashing.hash_value(request.form.get('password'), salt=salt)
         collection.update_one({'_id': ObjectId(token_data)},{'$set': {'password': password,'salt': salt}})
         return Response(json.dumps({'message':token_data}),status=200)
@@ -151,6 +149,8 @@ def new_verification_link():
         if email:
             user = collection.find_one({'email':email})
             if user:
+                if user['google_id']:
+                    return Response(json.dumps({'message':'user registered with google'}), 422)
                 if not user['active']:
                     serializer = URLSafeTimedSerializer(os.getenv('JWT_SECRET_KEY'))
                     token = str(user['_id'])
@@ -184,14 +184,12 @@ def login ():
         password = request.form.get('password')
         real_user = collection.find_one({'email':email})
         if real_user:
+            if real_user['google_id']:
+                return Response(json.dumps({'message':'user registered with google'}), status=422)
             if not real_user['active']:
-                return Response(json.dumps({'message':'user not verified'}), status=422)
+                return Response(json.dumps({'message':'user not verified'}), status=409)
             if hashing.check_value(real_user["password"],password, real_user["salt"]):
                 response = {
-                    'email' : real_user['email'], #deve essere univoco
-                    'username': real_user['username'],
-                    'role' : real_user['role'],
-                    '_id' : str(real_user['_id']),
                     'token': create_access_token(identity=str(real_user['_id']), expires_delta=expires), #mettere poi id
                     'refresh_token': create_refresh_token(identity=str(real_user['_id']))
                 } #restituire poi un token e un refresh token
@@ -234,6 +232,9 @@ def register():
         password = request.form.get('password')
         confirm_password = request.form.get('confirm_password')
         email = request.form.get('email')
+
+        if collection.find_one({'email':email})['google_id']:
+            return Response(json.dumps({'message':'user already registered with google account'}), status=422)
 
         if collection.find_one({'username':username}):
             return Response(json.dumps({'message':'username already exist'}), status=409)
@@ -286,10 +287,13 @@ def activate_account ():
     try:
         serializer = URLSafeTimedSerializer(os.getenv('JWT_SECRET_KEY'))
         token = request.form.get('token')
+
         if not token:
             return Response(json.dumps({'message':'The URL is missing parameters, or it may be incomplete'}), status=400)
         token_data = serializer.loads(token,max_age=60*60*24)
         user = collection.find_one({'_id':ObjectId(token_data)})
+        if not user:
+            return Response(json.dumps({'message':'user not found'}),status=404)
         if not user['active']:
             collection.update_one({'_id':ObjectId(token_data)},{'$set':{'active':True}})
             return Response(json.dumps({'message':'account activated'}), status=200)
@@ -298,17 +302,6 @@ def activate_account ():
         return Response(json.dumps({'message':'link expired, please request a new activation link'}), status=410)
     except BadSignature:
         return Response(json.dumps({'message':'invalid link'}), status=401)
-
-
-
-
-
-
-
-
-
-
-
 
 
 #rotta per ottenere un nuovo access token
@@ -325,24 +318,14 @@ def refresh_token():
     
 
 
-
-
-
-
-
-
-
-
 #ottengo il token
 @app.route('/auth/google/login')
 def google_login():
     return google.authorize_redirect(url_for('authorize', _external=True))
 
 
-
-
-
-
+### IMPEDIRGLI IL CAMBIO PASSWORD, POI NEL RESOURCE IMPEDIRGLI IL CAMBIO MAIL, PER TUTTI QUESTI GESTIRNE I CASI CON ERRORI ESPLICITI
+ 
 
 #ottengo le informazioni andando a chiamare l'api userinfo
 @app.route('/auth/google/authorize')
@@ -352,21 +335,25 @@ def authorize():
         token = google.authorize_access_token()
         resp = google.get('https://www.googleapis.com/oauth2/v3/userinfo')
         profile = resp.json()
-        #todo: salvare le info utili nel db utenti e restituire un access token per mantenere l'utente loggato
-        # return f'{profile} <a href="/profile">Profilo</a> <img src="{profile["picture"]}"/>'
-                # Salvare le informazioni utili nei cookie
+        # return f'{profile}'
+
         if(not collection.find_one({'google_id':profile['sub']})):
             collection.insert_one({
                 'google_id': profile['sub'],
                 'email': profile['email'],
                 'username': profile['given_name'],
-                'propic': profile['picture']
+                'propic': profile['picture'],
+                'active':True,
+                'role':'user'
             })
-        else:
-            pass #se l'utente è già entrato in precedenza con google
+        
+        user = collection.find_one({'google_id':profile['sub']})
+
+        ## setta direttamente nei cookie i due token
         response = make_response(redirect(os.getenv('FRONTEND_DOMAIN')))
-        response.set_cookie('token', create_access_token(profile['sub'],expires_delta=expires)) 
-        response.set_cookie('refresh_token', create_refresh_token(profile['sub'],expires_delta=expires)) 
+        response.set_cookie('token', create_access_token(str(user['_id']),expires_delta=expires)) 
+        response.set_cookie('refresh_token', create_refresh_token(str(user['_id']),expires_delta=expires)) 
+
 
         # create_access_token(profile['name'])
         return response

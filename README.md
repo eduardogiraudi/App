@@ -32,4 +32,4 @@ Uno script python vanilla che ascolta in loop infinito la coda redis cercando nu
 
 ## Istruzioni di build e deploy
 ### Auth-Server
-sostituire nell'env react SOLO l'indirizzo dell'auth server a stringa vuota, gli altri indirizzi metterci poi i sottodomini corretti del deploy. su google console andare a cambiare l'url dell'app per autorizzarla all'Oauth
+sostituire nell'env react SOLO l'indirizzo dell'auth server a stringa vuota, gli altri indirizzi metterci poi i sottodomini corretti del deploy. su google console andare a cambiare l'url dell'app per autorizzarla all'Oauth. la password di redis è dentro al compose, per cambiarla in build impostartla di li.
