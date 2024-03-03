@@ -69,7 +69,7 @@ collection = db['users']
 #rotta di login
 
 
-redis_client = redis.StrictRedis(host='localhost', port=6380, decode_responses=True)
+redis_client = redis.StrictRedis(host='localhost', port=6380, decode_responses=True, password=os.getenv('REDIS_PASSWORD'))
 
 
 password_policy = PasswordPolicy.from_names(

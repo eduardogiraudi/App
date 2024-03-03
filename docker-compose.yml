@@ -20,7 +20,8 @@ services:
       context: .
       dockerfile: Dockerfile.redis
     container_name: redis
-    command: --port 6380
+    command: ["redis-server","--port 6380" , "--requirepass", "redis"]
+    env_file: .env
     ports: 
       - "6380:6380"
     volumes:

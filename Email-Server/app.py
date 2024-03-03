@@ -15,7 +15,7 @@ import requests
 load_dotenv('./Email.env')
 
 
-redis_client = redis.StrictRedis(host=os.getenv('REDIS_HOST'), port=os.getenv('REDIS_PORT'), decode_responses=True)
+redis_client = redis.StrictRedis(host=os.getenv('REDIS_HOST'), port=os.getenv('REDIS_PORT'), decode_responses=True, password=os.getenv('REDIS_PASSWORD'))
 
 
 def send_email(sender,to, subject, text, html):
