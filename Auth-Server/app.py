@@ -78,20 +78,24 @@ def require_reset_token ():
         email = request.form.get('email')
         user = collection.find_one({'email':email})
         if user:
-            if 'google_id' in user:
-                return Response(json.dumps({'message':'accounts registered wuth google cannot reset password'}), status=422)
+            # if 'google_id' in user:
+            #     return Response(json.dumps({'message':'accounts registered wuth google cannot reset password'}), status=422)
             if user['active']:
                 token = str(user['_id'])
                 token = serializer.dumps(token)
                 #manda in coda l'email e restituisce ok per dire al frontend per far visualizzare i diversi tipi di messaggio
-
-
                 email_object = {
                     'sender': os.getenv('MAIL_SENDER'),
                     'to': email,
                     'subject': 'Il tuo link di recupero',
                     'text': 'il link scadrà tra 15 minuti '+os.getenv('FRONTEND_DOMAIN')+'/change_password?token='+token,
-                    'html': f'<div>il link di recupero password scadrà tra 15 minuti: <a href="{os.getenv('FRONTEND_DOMAIN')+'/change_password?token='+token}" target="_blank">Link di recupero</a></div>'
+                    'context': {
+                        'name': user['username'],
+                        'title': 'Il tuo link di recupero password',
+                        'text': 'Clicca sul seguente link per reimpostare la tua password',
+                        'link': os.getenv('FRONTEND_DOMAIN')+'/change_password?token='+token,
+                        'link_title': 'Recupera la tua password'
+                    }
                 }
                 redis_client.lpush('email',json.dumps(email_object))
                 
@@ -149,8 +153,8 @@ def new_verification_link():
         if email:
             user = collection.find_one({'email':email})
             if user:
-                if 'google_id' in user:
-                    return Response(json.dumps({'message':'user registered with google'}), 422)
+                # if 'google_id' in user:
+                #     return Response(json.dumps({'message':'user registered with google'}), 422)
                 if not user['active']:
                     serializer = URLSafeTimedSerializer(os.getenv('JWT_SECRET_KEY'))
                     token = str(user['_id'])
@@ -158,9 +162,15 @@ def new_verification_link():
                     email_object = {
                         'sender': os.getenv('MAIL_SENDER'),
                         'to': email,
-                        'subject': 'Il tuo link di attivazione account',
+                        'subject': 'Il tuo nuovo link di attivazione account',
                         'text': 'il link di attivazione sarà valido per 24 ore '+os.getenv('FRONTEND_DOMAIN')+'/activate_account?token='+token,
-                        'html': f'<div>il link di attivazione sarà valido per 24 ore: <a href="{os.getenv('FRONTEND_DOMAIN')+'/activate_account?token='+token}" target="_blank">Link di attivazione</a></div>'
+                        'context': {
+                            'name': user['username'],
+                            'title': 'Il tuo nuovo link di attivazione account',
+                            'text': 'Il seguente link sarà valido per 24 ore, clicca sul bottone per attivare il tuo account',
+                            'link': os.getenv('FRONTEND_DOMAIN')+'/activate_account?token='+token,
+                            'link_title': 'Attiva il tuo account'
+                        } 
 
                     }
                     redis_client.lpush('email',json.dumps(email_object))
@@ -184,8 +194,8 @@ def login ():
         password = request.form.get('password')
         real_user = collection.find_one({'email':email})
         if real_user:
-            if 'google_id' in real_user:
-                return Response(json.dumps({'message':'user registered with google'}), status=422)
+            # if 'google_id' in real_user:
+            #     return Response(json.dumps({'message':'user registered with google'}), status=422)
             if not real_user['active']:
                 return Response(json.dumps({'message':'user not verified'}), status=409)
             if hashing.check_value(real_user["password"],password, real_user["salt"]):
@@ -233,8 +243,8 @@ def register():
         confirm_password = request.form.get('confirm_password')
         email = request.form.get('email')
 
-        if 'google_id' in collection.find_one({'email':email}): #testare
-            return Response(json.dumps({'message':'user already registered with google account'}), status=422)
+        # if 'google_id' in collection.find_one({'email':email}): #testare
+        #     return Response(json.dumps({'message':'user already registered with google account'}), status=422)
 
         if collection.find_one({'username':username}):
             return Response(json.dumps({'message':'username already exist'}), status=409)
@@ -267,10 +277,17 @@ def register():
         email_object = {
             'sender': os.getenv('MAIL_SENDER'),
             'to': email,
-            'subject': 'il tuo link di attivazione',
-            'text': f'il link di attivazione sarà valido per 24 ore {os.getenv('FRONTEND_DOMAIN')}/activate_account?token={token}',
-            'html': f'<div>il link di attivazione sarà valido per 24 ore: <a href="{os.getenv('FRONTEND_DOMAIN')+'/activate_account?token='+token}" target="_blank">Link di attivazione</a></div>'
+            'subject': 'Il tuo link di attivazione account',
+            'text': f'Il link di attivazione sarà valido per 24 ore {os.getenv('FRONTEND_DOMAIN')}/activate_account?token={token}',
+            'context': {
+                'name': user['username'],
+                'title': 'Il tuo link di attivazione account',
+                'text': 'Il link di attivazione account sarà valido per le prossime 24 ore',
+                'link': os.getenv('FRONTEND_DOMAIN')+'/activate_account?token='+token,
+                'link_title': 'Attiva il tuo account'
+            }
         }
+
         redis_client.lpush('email',json.dumps(email_object))
         
 
