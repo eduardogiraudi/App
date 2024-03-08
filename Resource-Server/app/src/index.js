@@ -30,7 +30,7 @@ root.render(
 
 function App(){
   const [person, setPerson] = useState()
-  console.log(resourceServer, authServer);
+
   const api = axios.create({
     baseURL: resourceServer,
   })
@@ -56,8 +56,8 @@ function App(){
           return Promise.reject(error)
         }
         try{
-          const response = await refreshApi.post('/auth/refresh_token', {
-            Headers: {
+          const response = await refreshApi.post('/auth/refresh_token',{} ,{
+            headers: {
               'Authorization': `Bearer ${refreshToken}`,
             }
           })
@@ -66,7 +66,7 @@ function App(){
           return api.request(error.config)
         }catch(err){
           /* window.location.href = authServer */
-          console.log('bloccato riga 68');
+          console.log('bloccato riga 68', err);
           return Promise.reject(err)
         }
       }
