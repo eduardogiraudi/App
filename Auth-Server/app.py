@@ -201,7 +201,7 @@ def login ():
             if hashing.check_value(real_user["password"],password, real_user["salt"]):
                 response = {
                     'token': create_access_token(identity=str(real_user['_id']), expires_delta=expires), #mettere poi id
-                    'refresh_token': create_refresh_token(identity=str(real_user['_id']))
+                    'refresh_token': create_refresh_token(identity=str(real_user['_id'])),
                 } #restituire poi un token e un refresh token
                 response = dumps({'message':response})
                 return Response(response, status=200)

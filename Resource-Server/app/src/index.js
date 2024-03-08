@@ -51,7 +51,7 @@ function App(){
       if(error.response.status === 401){
         const refreshToken = getCookie('refresh_token')
         if (!refreshToken) {
-          /* window.location.href = authServer */
+          window.location.href = authServer
           console.log('bloccato riga 54');
           return Promise.reject(error)
         }
@@ -65,7 +65,7 @@ function App(){
           setCookie('token',newToken)
           return api.request(error.config)
         }catch(err){
-          /* window.location.href = authServer */
+          window.location.href = authServer
           console.log('bloccato riga 68', err);
           return Promise.reject(err)
         }
