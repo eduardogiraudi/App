@@ -10,7 +10,8 @@ test_email_settings = {
     'to': 'Eduardo <eduardo.giraudi13@gmail.com>',
     'subject': 'Email testing',
     'text': 'email server running in test mode',
-    'context': {
+    'template': 'register',
+    'data': {
         'title': 'titolo prova',
         'text': 'testo di prova', 
         'name': 'Eduardo',

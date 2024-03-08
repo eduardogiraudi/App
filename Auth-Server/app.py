@@ -89,7 +89,8 @@ def require_reset_token ():
                     'to': email,
                     'subject': 'Il tuo link di recupero',
                     'text': 'il link scadrà tra 15 minuti '+os.getenv('FRONTEND_DOMAIN')+'/change_password?token='+token,
-                    'context': {
+                    'template': 'reset_password',
+                    'data': {
                         'name': user['username'],
                         'title': 'Il tuo link di recupero password',
                         'text': 'Clicca sul seguente link per reimpostare la tua password',
@@ -164,7 +165,8 @@ def new_verification_link():
                         'to': email,
                         'subject': 'Il tuo nuovo link di attivazione account',
                         'text': 'il link di attivazione sarà valido per 24 ore '+os.getenv('FRONTEND_DOMAIN')+'/activate_account?token='+token,
-                        'context': {
+                        'template': 'new_verification_link',
+                        'data': {
                             'name': user['username'],
                             'title': 'Il tuo nuovo link di attivazione account',
                             'text': 'Il seguente link sarà valido per 24 ore, clicca sul bottone per attivare il tuo account',
@@ -279,7 +281,8 @@ def register():
             'to': email,
             'subject': 'Il tuo link di attivazione account',
             'text': f'Il link di attivazione sarà valido per 24 ore {os.getenv('FRONTEND_DOMAIN')}/activate_account?token={token}',
-            'context': {
+            'template': 'register',
+            'data': {
                 'name': user['username'],
                 'title': 'Il tuo link di attivazione account',
                 'text': 'Il link di attivazione account sarà valido per le prossime 24 ore',

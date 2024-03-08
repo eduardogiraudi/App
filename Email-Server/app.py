@@ -24,12 +24,12 @@ redis_client = redis.StrictRedis(host=os.getenv('REDIS_HOST'), port=os.getenv('R
 
 
 
-def send_email(sender,to, subject, text, context):
+def send_email(sender,to, subject, text,template, data):
 
     template_loader = FileSystemLoader(searchpath='html/')
     template_env = Environment(loader=template_loader)
-    template = template_env.get_template('skeleton.html')
-    template = template.render(context)
+    template = template_env.get_template(template+'.html')
+    template = template.render(data)
 
 
 
@@ -42,7 +42,7 @@ def send_email(sender,to, subject, text, context):
             "html":template,
 			"text": text
             })
-    print(sender, to, subject, text, request.status_code)
+    print(sender, to, subject, text, template, data, request.status_code)
 
 
 
@@ -54,10 +54,10 @@ def listen_queue():
         email = redis_client.brpop('email')[1]
         if email:
             if test:
-                send_email(test_email_settings['sender'],test_email_settings['to'],test_email_settings['subject'],test_email_settings['text'],test_email_settings['context'],)
+                send_email(test_email_settings['sender'],test_email_settings['to'],test_email_settings['subject'],test_email_settings['text'],test_email_settings['template'],test_email_settings['data'],)
             else:
                 email = json.loads(email)
-                send_email(email['sender'],email['to'],email['subject'],email['text'], email['context'])
+                send_email(email['sender'],email['to'],email['subject'],email['text'],email['template'],email['data'])
 
 if __name__ == '__main__':
     listen_queue()

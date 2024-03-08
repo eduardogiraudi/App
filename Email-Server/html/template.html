@@ -1,0 +1,133 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="it" xml:lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{title}}</title>
+  <style>
+    a{
+        cursor: pointer;
+    }
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #f7f7f7;
+      margin: 0;
+      padding: 0;
+    }
+
+    .card {
+      max-width: 600px;
+      margin: 20px auto;
+      background-color: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+      border-spacing: 0;
+    }
+
+    .header {
+      background-color: #ecf0f1;
+      padding: 20px;
+      text-align: center;
+      color: #ffffff;
+    }
+
+    .header img {
+      max-width: 150px;
+    }
+
+    .content {
+      padding: 20px;
+      text-align: center;
+      
+
+      color: #333333;
+    }
+    .td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    }
+
+    /* Stile per le righe con sfondo alternato */
+    .tr:nth-child(even) {
+      background-color: #f2f2f2;
+    }
+
+    /* Stile per le colonne con sfondo alternato */
+    .tr td:nth-child(even) {
+      background-color: #ecf0f1;
+    }
+    .content ol, .content ul{
+      list-style: none;
+      list-style-position: inside;
+      padding: 0;
+    }
+
+    .content h2 {
+      color: #009DA8;
+      font-size: 24px;
+    }
+
+    .content p {
+      font-size: 16px;
+    }
+
+    .footer {
+      background-color: #F5F5F5;
+      padding: 10px;
+      text-align: center;
+    }
+
+    .footer a {
+      color: #009DA8;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    .btn-container{
+      background-color: black;
+      border-radius: 10px;
+      margin-top: 30px;
+      }
+      .btn-container a{
+      padding: 10px 20px ;
+      text-decoration: none;
+      display: block;
+      color: white;
+
+      }
+      .btn-container a:hover{
+      color: #009DA8;
+      transition: 0.2s;
+      }
+      .btn-container:hover {
+      background-color: #1c1c1c;
+      transition: 0.2s;
+
+      }
+
+  </style>
+</head>
+<body>
+
+  <table class="card" cellspacing="0" cellpadding="0">
+    <tr>
+      <td>
+        <div class="header">
+          
+        </div>
+        <div class="content">
+            {% block content %}{% endblock %}
+        </div>
+        <div class="footer">
+            <p>
+                Company Inc, 7-11 Commercial Ct, Belfast BT1 2NB <br/>
+                Don't like these emails? <a href="http://htmlemail.io/blog">Unsubscribe</a>.<br/>
+                Powered by <a href="http://htmlemail.io">HTMLemail.io</a>
+            </p>
+        </div>
+      </td>
+    </tr>
+  </table>
+
+</body>
+</html>
