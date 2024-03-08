@@ -4,6 +4,8 @@
 ## Requisiti 
 Sul computer deve essere installato docker (necessario in fase di sviluppo per creare i container con MongoDB e Redis), python (con pipenv) e node
 
+## Installazione dipendenze
+Su sistemi Unix like eseguire il file install, per sistemi Windows eseguire il file install.ps1. Alla fine dell'esecuzione il terminale avrà installato tutte le dipendenze di tutti i server.
 
 ## Struttura e funzionamento del backend
 Il backend si dividerà in più server, per ora uno di autenticazione (che si occupa di tutto ciò che concerne l'autenticazione e più in generale i dati di accesso degli utenti) fornendo la possibilità di login interno all'app o tramite oAuth con Google, il server di risorse (contenente rotte sia protette che non), l'OTP server, che si occupa della verifica di dispositivi nuovi da parte degli utenti, l'Email server che si occupa di ascoltare le code redis alla chiave email e inviare email. le rotte del resource server saranno protette grazie al fatto che i  server condividono lo stesso file con le variabili d'ambiente contenente la firma server
