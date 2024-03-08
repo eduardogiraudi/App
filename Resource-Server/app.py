@@ -17,7 +17,7 @@ jwt = JWTManager(app)
 @app.route('/resource/profile', methods=['POST'])
 @jwt_required()
 def protected(): 
-    return Response(get_jwt_identity(), status=200)
+    return Response(json.dumps({'message':get_jwt_identity()}), status=200)
 
 @app.route('/')
 def red():
