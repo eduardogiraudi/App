@@ -24,7 +24,7 @@ la porta è 5000
 ### MongoDB
 la sua porta è la standard 27017, per avviarlo è necessario avere docker, creando il container col comando docker compose (all'interno della directory Auth-Server)
 ### Redis
-per ora serve per le code email, i vari server pushano nuovi dati in coda e l'email server è in costante ascolto delle chiavi email per mandarle, su windows ci connettiamo con lo script redis-cli.ps1, su mac meglio installarlo
+per ora serve per le code email, i vari server pushano nuovi dati in coda e l'email server è in costante ascolto delle chiavi email per mandarle, su windows ci connettiamo con lo script redis-cli.ps1, su mac meglio installarlo. 
 #### Porta
 la porta è 6380
 ### Email server
