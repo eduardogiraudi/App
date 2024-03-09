@@ -1,6 +1,13 @@
-{% extends "./skeleton.html" %}
+{% extends "./template.html" %}
 {% block content%}
-
+<h2>Ciao {{name}}, {{title}}</h2>
+<p>{{text}}</p>
+<p class="btn-container">
+    <a href="{{link}}">{{link_title}}</a>
+</p>
+Non hai richiesto questa email? Ignorala o non esitare a contattarci<br/>
+Cordiali Saluti, <br/>
+il team {{app}}
 
 
 {% endblock %}

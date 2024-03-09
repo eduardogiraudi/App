@@ -29,6 +29,8 @@ def send_email(sender,to, subject, text,template, data):
     template_loader = FileSystemLoader(searchpath='html/')
     template_env = Environment(loader=template_loader)
     template = template_env.get_template(template+'.html')
+    data = data
+    data['app'] = os.getenv('APP_NAME')
     template = template.render(data)
 
 

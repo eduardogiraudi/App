@@ -6,9 +6,10 @@ function App(){
 
 
         // quando ci si logga verifica se si è loggati
+        // da verificare bene bene
         // deve farlo in ogni rotta protetta poi, renderla una funzione riutilizzabile in futuro
 
-        if(getCookie('token')){
+/*         if(getCookie('token')){
             fetch(`${resourceServer}/resource/profile`, {
                 method:'POST',
                 headers: {
@@ -33,7 +34,7 @@ function App(){
                     window.location.href = resourceServer
                 }
             });
-        }
+        } */
 
 
     return (
