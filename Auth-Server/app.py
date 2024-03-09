@@ -46,7 +46,7 @@ google = oauth.register(
     redirect_uri='http://127.0.0.1:8080/auth/google/authorize',
     client_kwargs={'scope': 'email profile'},
 )
-client = MongoClient(f'mongodb://{os.getenv('MONGO_USER')}:{os.getenv('MONGO_PASSWORD')}@{os.getenv('MONGO_HOST')}:{os.getenv('MONGO_PORT')}/')
+client = MongoClient(f'mongodb://{os.getenv("MONGO_USER")}:{os.getenv("MONGO_PASSWORD")}@{os.getenv("MONGO_HOST")}:{os.getenv("MONGO_PORT")}/')
 
 hashing = Hashing(app)
 jwt = JWTManager(app)
@@ -280,7 +280,7 @@ def register():
             'sender': os.getenv('MAIL_SENDER'),
             'to': email,
             'subject': 'Il tuo link di attivazione account',
-            'text': f'Il link di attivazione sarà valido per 24 ore {os.getenv('FRONTEND_DOMAIN')}/activate_account?token={token}',
+            'text': f'Il link di attivazione sarà valido per 24 ore {os.getenv("FRONTEND_DOMAIN")}/activate_account?token={token}',
             'template': 'register',
             'data': {
                 'name': user['username'],
