@@ -299,7 +299,7 @@ def register():
     except EmailNotValidError as e:
         return Response(json.dumps({'message':'invalid email'}),status=400)
     except ValueError as ValErr:
-        app.logger.error(str(ValErr))
+        # app.logger.error(str(ValErr))
         return Response(json.dumps({'message': 'Error, please try again'}), status=500)
 
 #attiva account

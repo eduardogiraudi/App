@@ -64,7 +64,7 @@ def generateOTP():
             # bisogna ancora prendere le ultime 4 cifre numeriche dell'hashing
             }), 200)
     except ValueError as ValErr:
-        app.logger.error(str(ValErr))
+        # app.logger.error(str(ValErr))
         return Response(json.dumps({'message':'General error'}),status=500)
 
 
@@ -101,5 +101,5 @@ def checkOTP():
         else:
             return Response(json.dumps({'message': 'OTP expired'}), status=401)
     except ValueError as ValErr:
-        app.logger.error(str(ValErr))
+        # app.logger.error(str(ValErr))
         return Response(json.dumps({'message': 'General error, please try again' }), status=500)
