@@ -2,7 +2,7 @@
 
 
 ## Requisiti 
-Sul computer deve essere installato docker (necessario in fase di sviluppo per creare i container con MongoDB e Redis), python (con pipenv) e node
+Sul computer deve essere installato docker (necessario in fase di sviluppo per creare i container con MongoDB e Redis), Python versione 3.12 (con pipenv) e NodeJS
 
 ## Installazione dipendenze
 Su sistemi Unix like eseguire il file install, per sistemi Windows eseguire il file install.ps1. Alla fine dell'esecuzione il terminale avrà installato tutte le dipendenze di tutti i server.
@@ -22,13 +22,13 @@ la porta è 5001
 #### Porta
 la porta è 5000
 ### MongoDB
-la sua porta è la standard 27017, per avviarlo è necessario avere docker, creando il container col comando docker compose (all'interno della directory Auth-Server)
+la sua porta è la standard 27017, per avviarlo è necessario avere Docker, creando il container col comando docker compose (all'interno della directory di root dell'app)
 ### Redis
 per ora serve per le code email, i vari server pushano nuovi dati in coda e l'email server è in costante ascolto delle chiavi email per mandarle, su windows ci connettiamo con lo script redis-cli.ps1, su mac meglio installarlo. 
 #### Porta
 la porta è 6380
 ### Email server
-Uno script python vanilla che ascolta in loop infinito la coda redis cercando nuove chiavi email, quando le trova le deserializza e invia le email con i loro dati, aumenta la scalabilità dei server che necessitano l'invio di email
+Uno script python vanilla che ascolta in un loop infinito la coda redis cercando nuove chiavi email, quando le trova le deserializza e invia le email con i loro dati, aumenta la scalabilità dei vari server che necessitano l'invio di email in determinate rotte API
 
 
 
