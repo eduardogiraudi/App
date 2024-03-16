@@ -1,0 +1,3 @@
+#!/bin/bash
+cd Email-Server; 
+pipenv run python3 app.py
