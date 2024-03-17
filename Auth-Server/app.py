@@ -79,8 +79,8 @@ def require_reset_token ():
         email = request.form.get('email')
         user = collection.find_one({'email':email})
         if user:
-            # if 'google_id' in user:
-            #     return Response(json.dumps({'message':'accounts registered wuth google cannot reset password'}), status=422)
+            if 'google_id' in user:
+                return Response(json.dumps({'message':'accounts registered wuth google cannot reset password'}), status=422)
             if user['active']:
                 token = str(user['_id'])
                 token = serializer.dumps(token)
@@ -155,8 +155,8 @@ def new_verification_link():
         if email:
             user = collection.find_one({'email':email})
             if user:
-                # if 'google_id' in user:
-                #     return Response(json.dumps({'message':'user registered with google'}), 422)
+                if 'google_id' in user:
+                    return Response(json.dumps({'message':'user registered with google'}), 422)
                 if not user['active']:
                     serializer = URLSafeTimedSerializer(os.getenv('JWT_SECRET_KEY'))
                     token = str(user['_id'])
@@ -197,8 +197,8 @@ def login ():
         password = request.form.get('password')
         real_user = collection.find_one({'email':email})
         if real_user:
-            # if 'google_id' in real_user:
-            #     return Response(json.dumps({'message':'user registered with google'}), status=422)
+            if 'google_id' in real_user:
+                return Response(json.dumps({'message':'user registered with google'}), status=422)
             if not real_user['active']:
                 return Response(json.dumps({'message':'user not verified'}), status=409)
             if hashing.check_value(real_user["password"],password, real_user["salt"]):
@@ -246,11 +246,15 @@ def register():
         confirm_password = request.form.get('confirm_password')
         email = request.form.get('email')
 
-        # if 'google_id' in collection.find_one({'email':email}): #testare
-        #     return Response(json.dumps({'message':'user already registered with google account'}), status=422)
+        existing_user= collection.find_one({'email':email})
+        if existing_user:        
+            if 'google_id' in collection.find_one({'email':email}): #testare
+                return Response(json.dumps({'message':'user already registered with google account'}), status=422)
 
-        if collection.find_one({'username':username}):
-            return Response(json.dumps({'message':'username already exist'}), status=409)
+            if collection.find_one({'username':username}):
+                return Response(json.dumps({'message':'username already exist'}), status=409)
+            if collection.find_one({'email':email}):
+                return Response(json.dumps({'message':'email already exist'}),status=409)
 
         if confirm_password!=password:
             return Response(json.dumps({'message':'password and confirm password do not match'}),status=400)
@@ -260,8 +264,7 @@ def register():
         #validazione email (se non è valida la butta in exception e se esiste già returna 409)
 
         validate_email(email)
-        if collection.find_one({'email':email}):
-            return Response(json.dumps({'message':'email already exist'}),status=409)
+
 
 
         #aggiungere validazione poi
@@ -358,7 +361,7 @@ def authorize():
         resp = google.get('https://www.googleapis.com/oauth2/v3/userinfo')
         profile = resp.json()
         # return f'{profile}'
-
+        #ancora da testare
         if(not collection.find_one({'google_id':profile['sub']})):
             collection.insert_one({
                 'google_id': profile['sub'],
@@ -382,7 +385,7 @@ def authorize():
 
         # Impostare le informazioni utente nei cookie
     except ValueError as ValErr:
-        app.logger.error(str(ValErr))
+        # app.logger.error(str(ValErr))
         #altrimenti redirect a pagina "di login"
         return redirect('/')
     
