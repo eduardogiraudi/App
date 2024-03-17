@@ -1,0 +1,14 @@
+# Esegue lo script ogni giorno alle 3 del mattino
+#incollare il contenuto di questo script con il percorso assoluto del file di run su crontab -e nell'editor
+0 3 * * * /bin/bash /Users/eduz/App/Backup-Database-Bot/run_backup.sh
+
+*/1 * * * * /bin/bash /Users/eduz/App/Backup-Database-Bot/run_backup.sh >/Users/eduz/App/Backup-Database-Bot/cron.log 2>/tmp/cronerr.log
+
+
+*/1 * * * * /bin/bash /Users/eduz/App/Backup-Database-Bot/run_backup.sh
+
+*/1 * * * * /Users/eduz/App/Backup-Database-Bot/run_backup.sh >> /Users/eduz/App/Backup-Database-Bot/cron.log 2>&1
+
+
+#dist
+0 3 * * * /Users/eduz/App/Backup-Database-Bot/run_backup.sh >> /Users/eduz/App/Backup-Database-Bot/cron.log 2>&1
