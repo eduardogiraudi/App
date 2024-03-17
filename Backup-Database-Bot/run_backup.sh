@@ -4,7 +4,7 @@
 # Naviga nella directory del tuo script Python
 cd /Users/eduz/App/Backup-Database-Bot/
 VIRTUAL_ENV=ddd #sostituirlo poi con il path dell'ambiente virtuale reale in dist, lo si vede entrando nella cartella e facendo pipenv --venv, si aggiunge prima source e alla fine bin/activate 
-source /Users/eduz/.local/share/virtualenvs/Backup-Database-Bot-bZYeOyvW/bin/activate
+source /Users/eduz/.local/share/virtualenvs/Backup-Database-Bot-Backup-Database-Bot-NCGd4QkM/bin/activate
 python3 app.py
 
 deactivate

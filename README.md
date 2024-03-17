@@ -41,4 +41,4 @@ Uno script python vanilla che ascolta in un loop infinito la coda redis cercando
 sostituire nell'env react SOLO l'indirizzo dell'auth server a stringa vuota, gli altri indirizzi metterci poi i sottodomini corretti del deploy. su google console andare a cambiare l'url dell'app per autorizzarla all'Oauth. la password di redis è dentro al compose, per cambiarla in build impostartla di li.
 
 ### Backup-Database-Bot
-creare una cron con crontab -e su terminale e incollarci il percorso assoluto dello script shell run_backup.sh (sostituire all'interno di sto file con il percorso assoluto dell'env, ottenendolo con pipenv --env entrando prima dentro la cartella Backup-Database-Bot) e aggiungerci prima source e dopo il path (attaccato) /bin/activate
+creare una cron con crontab -e su terminale e incollarci il percorso assoluto dello script shell run_backup.sh (sostituire all'interno di sto file con il percorso assoluto dell'env, ottenendolo con pipenv --venv entrando prima dentro la cartella Backup-Database-Bot) e aggiungerci prima source e dopo il path (attaccato) /bin/activate
