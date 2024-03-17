@@ -10,5 +10,5 @@
 */1 * * * * /Users/eduz/App/Backup-Database-Bot/run_backup.sh >> /Users/eduz/App/Backup-Database-Bot/cron.log 2>&1
 
 
-#dist
+#dist: 
 0 3 * * * /Users/eduz/App/Backup-Database-Bot/run_backup.sh >> /Users/eduz/App/Backup-Database-Bot/cron.log 2>&1

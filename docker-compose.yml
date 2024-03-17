@@ -31,7 +31,21 @@ services:
 
     # prima creare un user così tipo poi mandare giù il db e decommentare: db.createUser({user: "admin",pwd: "admin_password",roles: [{ role: "userAdminAnyDatabase", db: "admin" }]})
     # command: --auth 
-
+  mongodb_backup:
+    build:
+      context: .
+      dockerfile: Dockerfile.mongo
+    container_name: mongodb_backup
+    ports:
+      - "27018:27018"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_USER_BACKUP}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD_BACKUP}
+    volumes:
+      - mongodb_backup_data:/data/db
+    env_file: .env
+    command: mongod --port 27018
 volumes:
   mongodb_data:
+  mongodb_backup_data:
   redis-data: {}
