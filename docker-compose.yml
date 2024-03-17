@@ -4,7 +4,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.mongo
-    container_name: mongodb_users
+    container_name: mongodb
     ports:
       - "27017:27017"
     environment:
