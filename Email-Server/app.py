@@ -53,7 +53,7 @@ def send_email(sender,to, subject, text,template, data):
 
 def listen_queue():
     while True:
-        email = redis_client.brpop('email')[1]
+        email = redis_client.blpop('email')[1]
         if email:
             if test:
                 send_email(test_email_settings['sender'],test_email_settings['to'],test_email_settings['subject'],test_email_settings['text'],test_email_settings['template'],test_email_settings['data'],)

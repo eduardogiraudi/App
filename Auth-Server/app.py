@@ -99,7 +99,7 @@ def require_reset_token ():
                         'link_title': 'Recupera la tua password'
                     }
                 }
-                redis_client.lpush('email',json.dumps(email_object))
+                redis_client.rpush('email',json.dumps(email_object))
                 
                 return Response(json.dumps({'message':'ok'}),status=200)
             else:
@@ -176,7 +176,7 @@ def new_verification_link():
                         } 
 
                     }
-                    redis_client.lpush('email',json.dumps(email_object))
+                    redis_client.rpush('email',json.dumps(email_object))
                     return Response(json.dumps({'message':'email sent'}), status=200)
                 else:
                     return Response(json.dumps({'message':'account is already active'}), status=400)
@@ -295,7 +295,7 @@ def register():
             }
         }
 
-        redis_client.lpush('email',json.dumps(email_object))
+        redis_client.rpush('email',json.dumps(email_object))
         
 
         return Response(json.dumps({'message': user['username']}),status=200)
