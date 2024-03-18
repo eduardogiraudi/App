@@ -1,4 +1,14 @@
 #!/bin/bash
+# Funzione per terminare entrambi i processi
+terminate_processes() {
+    echo "Terminating processes..."
+    kill $flask_pid
+    echo "Process" $flask_pid "terminated"
+}
+
+# Registra la funzione per essere eseguita quando lo script viene interrotto
+
+trap terminate_processes EXIT
 
 cd Resource-Server/
 
@@ -13,22 +23,9 @@ flask_pid=$!
 cd app 
 
 # Avvia npm start in background
-npm start &
+npm start &&
 
-# Salva l'ID del processo npm
-npm_pid=$!
 
-# Funzione per terminare entrambi i processi
-terminate_processes() {
-    echo "Terminating processes..."
-    kill $npm_pid
-    echo "Process" $npm_pid "terminated"
-    kill $flask_pid
-    echo "Process" $flask_pid "terminated"
-}
-
-# Registra la funzione per essere eseguita quando lo script viene interrotto
-trap terminate_processes EXIT
 
 # Attendi che entrambi i processi terminino
 wait
