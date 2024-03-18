@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom/client';
 import './css/index.css';
 import axios from 'axios'
@@ -72,7 +72,9 @@ function App(){
       }
     }
   )
-  api.post('/resource/profile').then(res=>setPerson(res.data.message))
+  useEffect(()=>{
+    api.post('/resource/profile').then(res=>setPerson(res.data.message))
+  },[])
 
 
   return `${person}`

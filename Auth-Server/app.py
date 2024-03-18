@@ -377,7 +377,7 @@ def authorize():
         ## setta direttamente nei cookie i due token
         response = make_response(redirect(os.getenv('FRONTEND_DOMAIN')))
         response.set_cookie('token', create_access_token(str(user['_id']),expires_delta=expires)) 
-        response.set_cookie('refresh_token', create_refresh_token(str(user['_id']),expires_delta=expires)) 
+        response.set_cookie('refresh_token', create_refresh_token(str(user['_id']))) 
 
 
         # create_access_token(profile['name'])

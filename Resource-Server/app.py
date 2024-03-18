@@ -1,4 +1,4 @@
-from flask import Flask, Response,redirect
+from flask import Flask, Response,redirect, render_template
 from flask_jwt_extended import JWTManager, get_jwt_identity, jwt_required
 from dotenv import load_dotenv
 from jwt.exceptions import ExpiredSignatureError
@@ -8,7 +8,7 @@ import json
 
 load_dotenv('.env')  # Carica le variabili d'ambiente da .env
 
-app = Flask(__name__)
+app = Flask(__name__,template_folder='./app/build/', static_folder='./app/build/static/')
 CORS(app)
 app.config['SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
 app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
@@ -22,6 +22,9 @@ def protected():
 @app.route('/')
 def red():
     return redirect('http://localhost:3001')
+    # return render_template('index.html')
+
+
 # @app.route('/resource/profile', methods=['GET', 'POST', 'PUT', 'DELETE'])
 # @jwt_required()
 # def profile():
