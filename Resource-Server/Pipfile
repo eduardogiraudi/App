@@ -9,6 +9,7 @@ flask-jwt-extended = "==4.6.0"
 python-dotenv = "==1.0.0"
 flask-cors = "*"
 colorama = "*"
+flask-pymongo = "*"
 
 [dev-packages]
 

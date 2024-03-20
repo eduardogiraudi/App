@@ -5,6 +5,7 @@ from jwt.exceptions import ExpiredSignatureError
 from flask_cors import CORS
 import os
 import json
+from flask_pymongo import MongoClient
 
 load_dotenv('.env')  # Carica le variabili d'ambiente da .env
 
