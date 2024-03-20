@@ -6,7 +6,7 @@ import os
 from datetime import datetime, timedelta
 from flask_hashing import Hashing
 import redis
-from flask_pymongo import MongoClient
+from flask_pymongo import MongoClient, ObjectId
 import secrets
 
 
@@ -18,7 +18,8 @@ jwt = JWTManager(app)
 hashing = Hashing(app)
 mongoclient = MongoClient(f'mongodb://{os.getenv('MONGO_USER')}:{os.getenv('MONGO_PASSWORD')}@{os.getenv('MONGO_HOST')}:{os.getenv('MONGO_PORT')}/')
 redis_client = redis.StrictRedis(host=os.getenv('REDIS_HOST'), port=os.getenv('REDIS_PORT'), decode_responses=True, password=os.getenv('REDIS_PASSWORD'))
-
+db = mongoclient['users']
+collection = db['users']
 
 def dynamic_secret_key(timestamp):
     return hashing.hash_value(timestamp, salt=os.getenv('SALT_SECRET_KEY'))
@@ -40,24 +41,19 @@ def generateOTP():
         current_timestamp = str(datetime.now())
         otp_secret_key = dynamic_secret_key(current_timestamp)
         userID = get_jwt_identity()
-
-
-        
-
         send_message_to = request.form.get('phone')
-
-
+        body= hash_to_last_4_int(hashing.hash_value(str(current_timestamp) + userID + otp_secret_key, salt=otp_salt))
 
         db = mongoclient['users']
         collection = db['users']
-        collection.update_one({'name':userID}, {"$set": {"OTP_Salt": otp_salt}})
+        collection.update_one({'_id':ObjectId(userID)}, {"$set": {"OTP_Salt": otp_salt}})
         
         data={
             'send_message_to': send_message_to,
-            'body': hash_to_last_4_int(hashing.hash_value(str(current_timestamp) + userID + otp_secret_key, salt=otp_salt))
+            'body': body
         }
 
-        redis_client.rpush(json.dumps(data))
+        redis_client.rpush('sms',json.dumps(data))
 
         return Response(json.dumps({'message':{
 
@@ -82,9 +78,7 @@ def redirect_to_frontend_server ():
 def checkOTP():
     try:
         userID = get_jwt_identity()
-        db = mongoclient['users']
-        collection = db['users']
-        real_user = collection.find_one({'name':userID})
+        real_user = collection.find_one({'_id':ObjectId(userID)})
         given_otp = request.form.get('otp')
         #converte la data ottenuta in oggetto time
         given_timestamp = request.form.get('timestamp')
@@ -109,3 +103,30 @@ def checkOTP():
     except ValueError as ValErr:
         # app.logger.error(str(ValErr))
         return Response(json.dumps({'message': 'General error, please try again' }), status=500)
+    
+
+@app.route('/otp/select_broker', methods=['GET'])
+@jwt_required()
+def select_broker():
+    id = get_jwt_identity()
+    user = collection.find_one({'_id': ObjectId(id)})
+    user['_id'] = str(user['_id']) 
+    brokers = {}
+    brokers["email"]=user['email']
+    mask = "*" * 11
+    brokers['email']=mask+brokers['email'][11:]
+
+    #dato che il numero di telefono non è obbligatorio registrarlo
+    if 'phone' in user:
+        brokers["phone"] = mask+user['phone'][11:] #con sta impostazione bisogna assicurarsi di storare anche il prefisso altrimenti si vedono solo gli asterischi
+    
+
+    return Response(json.dumps({"message":brokers}),status=200)
+
+
+
+
+@app.route('/otp/check_device')
+@jwt_required()
+def check_device():
+    pass

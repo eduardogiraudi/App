@@ -29,7 +29,7 @@ def listen_queue():
             if test:
                 send_sms(test_sms_settings)
             else:
-                sms = json.dumps(sms)
+                sms = json.loads(sms)
                 send_sms(sms)
 
 if __name__ == '__main__':
