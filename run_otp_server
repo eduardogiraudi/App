@@ -4,7 +4,7 @@ cd OTP-Server/
 
 
 # Avvia flask run in background
-pipenv run flask --debug run &
+pipenv run flask --debug run --port 5002 &
 
 # Salva l'ID del processo flask
 flask_pid=$! 
@@ -13,7 +13,7 @@ flask_pid=$!
 cd otp 
 
 # Avvia npm start in background
-npm start &
+pnpm start &
 
 # Salva l'ID del processo npm
 npm_pid=$!

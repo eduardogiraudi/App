@@ -1,11 +1,11 @@
-from flask import Flask, Response, request
+from flask import Flask, Response, request, redirect
 import json
 from flask_jwt_extended import JWTManager, jwt_required, get_jwt_identity
 from dotenv import load_dotenv
 import os
 from datetime import datetime, timedelta
 from flask_hashing import Hashing
-from twilio.rest import Client
+import redis
 from flask_pymongo import MongoClient
 import secrets
 
@@ -16,8 +16,8 @@ app.config['SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
 app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY') 
 jwt = JWTManager(app)
 hashing = Hashing(app)
-client = MongoClient(f'mongodb://{os.getenv('MONGO_USER')}:{os.getenv('MONGO_PASSWORD')}@{os.getenv('MONGO_HOST')}:{os.getenv('MONGO_PORT')}/')
-
+mongoclient = MongoClient(f'mongodb://{os.getenv('MONGO_USER')}:{os.getenv('MONGO_PASSWORD')}@{os.getenv('MONGO_HOST')}:{os.getenv('MONGO_PORT')}/')
+redis_client = redis.StrictRedis(host=os.getenv('REDIS_HOST'), port=os.getenv('REDIS_PORT'), decode_responses=True, password=os.getenv('REDIS_PASSWORD'))
 
 
 def dynamic_secret_key(timestamp):
@@ -40,22 +40,25 @@ def generateOTP():
         current_timestamp = str(datetime.now())
         otp_secret_key = dynamic_secret_key(current_timestamp)
         userID = get_jwt_identity()
+
+
+        
+
         send_message_to = request.form.get('phone')
-        account_sid = os.getenv('TWILIO_ID')
-        auth_token = os.getenv('TWILIO_SECRET')
-        client = Client(account_sid, auth_token)
-        message = client.messages.create(
-            to=send_message_to,
-            from_=os.getenv('TWILIO_PHONE_NUMBER'),
-            body=hash_to_last_4_int(hashing.hash_value(str(current_timestamp) + userID + otp_secret_key, salt=otp_salt)),
-        )
+
+
 
         db = mongoclient['users']
         collection = db['users']
         collection.update_one({'name':userID}, {"$set": {"OTP_Salt": otp_salt}})
         
-        # print(message.sid)
-        #il valore va sendato ad esempio con twilio
+        data={
+            'send_message_to': send_message_to,
+            'body': hash_to_last_4_int(hashing.hash_value(str(current_timestamp) + userID + otp_secret_key, salt=otp_salt))
+        }
+
+        redis_client.rpush(json.dumps(data))
+
         return Response(json.dumps({'message':{
 
             'timestamp': current_timestamp,
@@ -69,6 +72,9 @@ def generateOTP():
 
 
 
+@app.route('/')
+def redirect_to_frontend_server (): 
+    return redirect('http://localhost:3002')
 
 
 @app.route('/otp/check/', methods=['POST'])

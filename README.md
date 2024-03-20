@@ -2,13 +2,14 @@
 
 
 ## Requisiti 
-Sul computer deve essere installato docker (necessario in fase di sviluppo per creare i container con MongoDB e Redis), Python versione 3.12 (con pipenv) e NodeJS
+Sul computer deve essere installato docker (necessario in fase di sviluppo per creare i container con MongoDB e Redis), Python versione 3.12 (con pipenv) e NodeJS e pnpm installandolo tramite il node package manager con ```npm install -g pnpm```
 
 ## Installazione dipendenze
 Su sistemi Unix like eseguire il file install, per sistemi Windows eseguire il file install.ps1. Alla fine dell'esecuzione il terminale avrà installato tutte le dipendenze di tutti i server.
 
 ## Istruzioni particolari di avvio
 Per gestire i vari microservizi lato frontend si è reso necessario (visti i comandi simili, ma comunque differenti per gestire lo start in porte non standard su react). Per sistemi Unix l'avvio dei vari frontend è il classico ```npm start```, per sistemi Windows si utilizzerà ```npm start-windows```
+il frontend OTP utilizza la tecnologia pnpm, si rende necessario avviandolo con ```pnpm start``` o ```pnpm start-windows```
 
 
 ## Struttura e funzionamento del backend
@@ -24,7 +25,7 @@ la porta è 8080
 la porta è 5001
 ### OTP-Server
 #### Porta
-la porta è 5000
+la porta è 5002
 ### Backup-Database-Bot
 bot che alle 3 del mattino esegue un backup del database, dovrà fare poi un backup di tutti i database, seguire poi le istruzioni di dist per il suo deploy
 ### MongoDB
