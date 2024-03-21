@@ -41,22 +41,45 @@ def generateOTP():
         current_timestamp = str(datetime.now())
         otp_secret_key = dynamic_secret_key(current_timestamp)
         userID = get_jwt_identity()
-        send_message_to = request.form.get('phone')
+        user = collection.find_one({'_id': ObjectId(userID)})
+
+        preferred_broker = request.form.get('broker')
+        # if not preferred_broker: return Response(json.dumps({'message': 'no broker provided'}), status=400)
+
         body= hash_to_last_4_int(hashing.hash_value(str(current_timestamp) + userID + otp_secret_key, salt=otp_salt))
 
-        db = mongoclient['users']
-        collection = db['users']
+        if preferred_broker == 'sms' or preferred_broker != 'email': #così ovviamo a errori 
+            if 'phone' in user:
+                preferred_broker = 'sms' #se il preferred broker non era settato correttamente lo risettiamo 
+                data={
+                    'send_message_to': user['phone'],
+                    'body': body
+                }
+            else: preferred_broker='email'
+
+        if preferred_broker=='email': #altrimenti email
+
+            data = {
+                'sender': f'OTP <accounts@{os.getenv('APP_NAME')}.it',
+                'to': f'{user['username']} <{user['email']}>',
+                'subject': 'Il tuo codice OTP',
+                'template': 'otp',
+                'text': f'Il tuo codice di verifica OTP è {body}',
+                'data': {
+                    'otp': body, 
+                    'name': user['username']
+                }
+            }
+        
+        # db = mongoclient['users']
+        # collection = db['users']
         collection.update_one({'_id':ObjectId(userID)}, {"$set": {"OTP_Salt": otp_salt}})
         
-        data={
-            'send_message_to': send_message_to,
-            'body': body
-        }
 
-        redis_client.rpush('sms',json.dumps(data))
+        redis_client.rpush(preferred_broker,json.dumps(data))
 
         return Response(json.dumps({'message':{
-
+            'broker': preferred_broker,
             'timestamp': current_timestamp,
             # 'otp':hashing.hash_value(current_timestamp + userID + otp_secret_key, salt=otp_salt)
         }
@@ -91,10 +114,10 @@ def checkOTP():
             correct_otp = hash_to_last_4_int(hashing.hash_value(str(given_timestamp) + userID + otp_secret_key, salt=real_user['OTP_Salt']))
             if correct_otp == given_otp:
                 #deve poi inserire nel db che si è verificati con questo dispositivo
-                #elimino il salt nel db
                 new_device = secrets.token_hex(32)
 
-                debug = collection.update_one({'_id':ObjectId(userID)}, {"$set": {"OTP_Salt": ''}, '$push':{'devices': new_device}})
+                #elimino il salt nel db e aggiungo il nuovo dispositivo
+                collection.update_one({'_id':ObjectId(userID)}, {"$set": {"OTP_Salt": ''}, '$push':{'devices': new_device}})
 
                 #id del dispositivo da storare nei cookie
                 return Response(json.dumps({'message': new_device}), status=200) 
@@ -109,7 +132,7 @@ def checkOTP():
         return Response(json.dumps({'message': 'General error, please try again' }), status=500)
     
 
-@app.route('/otp/select_broker', methods=['GET'])
+@app.route('/otp/select_broker', methods=['POST'])
 @jwt_required()
 def select_broker():
     id = get_jwt_identity()
@@ -127,15 +150,17 @@ def select_broker():
 
     return Response(json.dumps({"message":brokers}),status=200)
 
-
-
-
 @app.route('/otp/check_device', methods=['POST'])
 @jwt_required()
 def check_device():
-    user_id = get_jwt_identity()
-    device=request.form.get('device')
-    user = collection.find_one({'_id': ObjectId(user_id)})
-    if device in user['devices']:
-        return Response(json.dumps({'message': 'ok'}), status=200)
-    else: return Response(json.dumps({'message': 'invalid device'}), status=400)
+    try:
+        user_id = get_jwt_identity()
+        device=request.form.get('device')
+
+        user = collection.find_one({'_id': ObjectId(user_id)})
+        if not device: return Response(json.dumps({'message': 'no device provided'}), status=400)
+        if device in user['devices']:
+            return Response(json.dumps({'message': 'ok'}), status=200)
+        else: return Response(json.dumps({'message': 'device not found'}), status=404)
+    except:
+        return Response(json.dump({'message': 'internal server error'}), status=500)

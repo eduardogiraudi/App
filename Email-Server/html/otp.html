@@ -1,0 +1,12 @@
+{% extends "./template.html" %}
+{% block content%}
+<h2>Ciao {{name}}, il tuo codice di verifica OTP</h2>
+<p>Come da te richiesto il tuo codice di verifica OTP è il seguente: {{otp}}</p>
+<p>Ti chiediamo di non condividere con nessuno questo codice per preservare la sicurezza del tuo account</p>
+
+Non hai richiesto questa email? Ignorala o non esitare a contattarci<br/>
+Cordiali Saluti, <br/>
+il team {{app}}
+
+
+{% endblock %}
