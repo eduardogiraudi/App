@@ -73,7 +73,7 @@ def redirect_to_frontend_server ():
     return redirect('http://localhost:3002')
 
 
-@app.route('/otp/check/', methods=['POST'])
+@app.route('/otp/check', methods=['POST'])
 @jwt_required()
 def checkOTP():
     try:
@@ -92,8 +92,12 @@ def checkOTP():
             if correct_otp == given_otp:
                 #deve poi inserire nel db che si è verificati con questo dispositivo
                 #elimino il salt nel db
-                collection.update_one({'name':userID}, {"$set": {"OTP_Salt": ''}})
-                return Response(json.dumps({'message': 'Correct OTP'}), status=200) 
+                new_device = secrets.token_hex(32)
+
+                debug = collection.update_one({'_id':ObjectId(userID)}, {"$set": {"OTP_Salt": ''}, '$push':{'devices': new_device}})
+
+                #id del dispositivo da storare nei cookie
+                return Response(json.dumps({'message': new_device}), status=200) 
             elif real_user['OTP_Salt'] == '':
                 return Response(json.dumps({'message': 'You probably already used this OTP'}), status=410)
             else: 
@@ -126,7 +130,12 @@ def select_broker():
 
 
 
-@app.route('/otp/check_device')
+@app.route('/otp/check_device', methods=['POST'])
 @jwt_required()
 def check_device():
-    pass
+    user_id = get_jwt_identity()
+    device=request.form.get('device')
+    user = collection.find_one({'_id': ObjectId(user_id)})
+    if device in user['devices']:
+        return Response(json.dumps({'message': 'ok'}), status=200)
+    else: return Response(json.dumps({'message': 'invalid device'}), status=400)
