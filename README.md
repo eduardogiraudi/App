@@ -8,8 +8,8 @@ Sul computer deve essere installato docker (necessario in fase di sviluppo per c
 Su sistemi Unix like eseguire il file install, per sistemi Windows eseguire il file install.ps1. Alla fine dell'esecuzione il terminale avrà installato tutte le dipendenze di tutti i server.
 
 ## Istruzioni particolari di avvio
-Per gestire i vari microservizi lato frontend si è reso necessario (visti i comandi simili, ma comunque differenti per gestire lo start in porte non standard su react). Per sistemi Unix l'avvio dei vari frontend è il classico ```npm start```, per sistemi Windows si utilizzerà ```npm start-windows```
-il frontend OTP utilizza la tecnologia pnpm, si rende necessario avviandolo con ```pnpm start``` o ```pnpm start-windows```
+Per gestire i vari microservizi lato frontend si è reso necessario (visti i comandi simili, ma comunque differenti per gestire lo start in porte non standard su react). Per sistemi Unix l'avvio dei vari frontend è il classico ```npm start```, per sistemi Windows si utilizzerà ```npm run start-windows``` 
+il frontend OTP utilizza la tecnologia pnpm, si rende necessario avviandolo con ```pnpm start``` o ```pnpm run start-windows```
 
 
 ## Struttura e funzionamento del backend
