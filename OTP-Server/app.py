@@ -94,7 +94,40 @@ def generateOTP():
 @app.route('/')
 def redirect_to_frontend_server (): 
     return redirect('http://localhost:3002')
+'''
 
+
+
+
+
+
+
+
+
+
+
+
+
+jwt valid after da implementare
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+'''
 
 @app.route('/otp/check', methods=['POST'])
 @jwt_required()

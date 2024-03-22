@@ -7,9 +7,9 @@ name = "pypi"
 flask = "==3.0.2"
 flask-jwt-extended = "==4.6.0"
 python-dotenv = "==1.0.0"
-flask-cors = "*"
 colorama = "*"
 flask-pymongo = "*"
+flask-cors = "*"
 
 [dev-packages]
 

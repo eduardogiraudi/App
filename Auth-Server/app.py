@@ -203,8 +203,12 @@ def login ():
                 return Response(json.dumps({'message':'user not verified'}), status=409)
             if hashing.check_value(real_user["password"],password, real_user["salt"]):
                 response = {
-                    'token': create_access_token(identity=str(real_user['_id']), expires_delta=expires), #mettere poi id
-                    'refresh_token': create_refresh_token(identity=str(real_user['_id'])),
+                    #emission date serve per questo: quando un utente cambia password permette di scollegare tutti i dispositivi, al cambio password ottiene una nuova coppia di token
+                    # tutti i token con emission date antecedenti al campo jwt_valid_after nel database diventano invalidi e revocati
+                    'token': create_access_token(identity=str(real_user['_id']), expires_delta=expires, additional_claims={'emission_date':str(datetime.now())}), #mettere poi id
+                    'refresh_token': create_refresh_token(identity=str(real_user['_id']), additional_claims={'emission_date':str(datetime.now())}),
+                    #'token': create_access_token(identity={'_id':str(real_user['_id'])}, expires_delta=expires),
+                    #'refresh_token': create_refresh_token(identity={'_id':str(real_user['_id'])})
                 } #restituire poi un token e un refresh token
                 response = dumps({'message':response})
                 return Response(response, status=200)
@@ -334,7 +338,7 @@ def activate_account ():
 def refresh_token():
     try:
         current_user = get_jwt_identity()
-        new_access_token = create_access_token(identity=current_user, expires_delta=expires)
+        new_access_token = create_access_token(identity=current_user, expires_delta=expires, additional_claims={'emission_date':str(datetime.now())})
         # new_refresh_token = create_refresh_token(identity=current_user)
         return Response(json.dumps({'message':new_access_token}), status=200)
     except ValueError as ValErr:

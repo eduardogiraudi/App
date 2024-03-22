@@ -39,3 +39,11 @@ def red():
 #         pass
     
 #     return 'lol'
+
+
+
+
+#la route logout deve blacklistare il token 
+
+# la route cambio password con checkbox fa decidere se l'utente vuole fare logout da tutti i dispositivi con il campo jwt valid after nel database che va controllato a ogni jwt required
+# lo scollega dispositivi invece serve per far rifare la verifica dispositivo, si elimina il campo dal database semplicemente

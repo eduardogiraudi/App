@@ -1,0 +1,21 @@
+
+riconoscimento dispositivo alla registrazione? no, alla verifica account!
+
+
+
+
+
+problema: i token devono poter essere revocati in caso di: 
+    logout (solo il token e il refresh token nel cookie), soluzione: implementare una blacklist
+    recupero password tramite password dimenticata: tutti gli altri token eccetto quello nuovo vanno invalidati
+    scelta dell'utente di scollegare un dispositivo: i token singoli di un dispositivo vanno rimossi
+
+
+
+    l'utente si logga, l'auth prova a fare una richiesta col cookie device id all'otp. se fallisce l'utente è loggato ma deve inserire un codice otp quando lo inserisce se va bene l'api si salva l'user agent
+    e il browser si salva il cookie con l'id restituito la richiesta riavviene (con check device) se è true si accede a resource server altrimenti messaggio di errore con route tipo response del auth server
+    questo permette di: scollegare i dispositivi (essi rimarranno loggati in quanto conoscono nome utente e password e possietono i token, 
+    ma se vogliamo revocare questo basta ad esempio cambiare password: nel database (al cambio password) si crea un campo stringa chiamato per esempio jwt valid after con una data, che si salva nel payload all'emissione, se la data di emissione token è antecedente a quella nel db allora l'utente non ha un token valido)
+    rotte da cambiare quindi: solo le jwt required, si accede alla data importando get_jwt() e facendo var = get_jwt() var['emission_date'] 
+
+    navigator.userAgentData .platform e .mobile
