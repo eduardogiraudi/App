@@ -42,6 +42,7 @@ def generateOTP():
         otp_secret_key = dynamic_secret_key(current_timestamp)
         userID = get_jwt_identity()
         user = collection.find_one({'_id': ObjectId(userID)})
+        if not user: return Response(json.dumps({'message': 'user not found, probably deleted'}), status=404)
 
         preferred_broker = request.form.get('broker')
         # if not preferred_broker: return Response(json.dumps({'message': 'no broker provided'}), status=400)
@@ -136,6 +137,10 @@ def checkOTP():
         userID = get_jwt_identity()
         real_user = collection.find_one({'_id':ObjectId(userID)})
         given_otp = request.form.get('otp')
+        user_agent = request.form.get('user_agent')
+        if not real_user: return Response(json.dumps({'message': 'user not found, probably deleted'}), status=404)
+        if not given_otp: return Response(json.dumps({'message': 'no otp provided'}), status=400)
+        if not user_agent: return Response(json.dumps({'message': 'no user agent provided'}), status=400)
         #converte la data ottenuta in oggetto time
         given_timestamp = request.form.get('timestamp')
         given_timestamp = datetime.strptime(given_timestamp,  '%Y-%m-%d %H:%M:%S.%f') 
@@ -150,7 +155,7 @@ def checkOTP():
                 new_device = secrets.token_hex(32)
 
                 #elimino il salt nel db e aggiungo il nuovo dispositivo
-                collection.update_one({'_id':ObjectId(userID)}, {"$set": {"OTP_Salt": ''}, '$push':{'devices': new_device}})
+                collection.update_one({'_id':ObjectId(userID)}, {"$set": {"OTP_Salt": ''}, '$push':{'devices': {'device_id':new_device, 'device_name': user_agent}}})
 
                 #id del dispositivo da storare nei cookie
                 return Response(json.dumps({'message': new_device}), status=200) 
@@ -191,8 +196,11 @@ def check_device():
         device=request.form.get('device')
 
         user = collection.find_one({'_id': ObjectId(user_id)})
+        if not user: return Response(json.dumps({'message': 'user not found, probably deleted'}), status=404)
         if not device: return Response(json.dumps({'message': 'no device provided'}), status=400)
-        if device in user['devices']:
+
+        #se il device è presente dentro la chiave device_id dentro l'array di oggetti devices
+        if any(device == dev['device_id'] for dev in user['devices']):
             return Response(json.dumps({'message': 'ok'}), status=200)
         else: return Response(json.dumps({'message': 'device not found'}), status=404)
     except:
