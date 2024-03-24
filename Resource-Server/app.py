@@ -13,6 +13,7 @@ app = Flask(__name__,template_folder='./app/build/', static_folder='./app/build/
 CORS(app)
 app.config['SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
 app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
+app.config['JWT_ERROR_MESSAGE_KEY'] = 'message'
 jwt = JWTManager(app)
 
 @app.route('/resource/profile', methods=['POST'])
@@ -24,6 +25,9 @@ def protected():
 def red():
     return redirect('http://localhost:3001')
     # return render_template('index.html')
+
+
+
 
 
 # @app.route('/resource/profile', methods=['GET', 'POST', 'PUT', 'DELETE'])

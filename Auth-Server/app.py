@@ -19,6 +19,9 @@ expires = timedelta(minutes=15)
 load_dotenv('.env')  # Carica le variabili d'ambiente da .env
 
 app = Flask(__name__, template_folder='./login/build/', static_folder='./login/build/static/')
+
+app.config['JWT_ERROR_MESSAGE_KEY'] = 'message'
+
 oauth = OAuth(app)
 
 
@@ -374,6 +377,7 @@ def authorize():
                 'propic': profile['picture'],
                 'active':True,
                 'role':'user'
+                
             })
         
         user = collection.find_one({'google_id':profile['sub']})

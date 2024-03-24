@@ -19,3 +19,31 @@ problema: i token devono poter essere revocati in caso di:
     rotte da cambiare quindi: solo le jwt required, si accede alla data importando get_jwt() e facendo var = get_jwt() var['emission_date'] 
 
     navigator.userAgentData .platform e .mobile
+
+    da msg a message e da sha256 a es512, forse si crittano i token pure
+    user probably deleted da implementare in route auth server
+    numero massimo tentativi otp poi salt si resetta a ''
+
+
+    l'utente si logga: se è presente un parametro nel link si crea un jwt completo, altrimenti si crea un jwt senza dispositivo e si reindirizza all'otp server
+    otp server: se 
+
+    oggi: 
+        otp corretto: il dispositivo viene letto e registrato dal jwt, il jwt che si ottiene al login ha incluso un id dispositivo
+
+        implementare riconoscimento dispositivo nell'otp e banlist
+        cambio algoritmo jwt
+        trovare modo per evitare il login tramite api (evita bruteforce skippando la parte captcha) (SI IMPLEMENTA IN DIST E SI DEVE POTER DISATTIVARE CON BOOLEANO, magari un semplice token firmato server)
+
+
+        nell'auth server si prova comunque a mandare una richiesta a login o login con google contenente un jwt e si prova a ottenere un device
+
+
+
+       
+       
+       
+       soluzione forse finale: scollega dispositivo o altre forme di logout: aggiunge una chiave Banned: true, se è true vuol dire che il token è da bannare 
+       in fase di otp quindi redirect al login altrimenti è solo un nuovo dispositivo in fase di registrazione e autorizzazione. questo permette all'auth server di gestire l'intera emissione dei token
+       se l'utente si logga su google non deve ricevere otp o altro (molto semplice: in fase di login o registrazione si emette un token con id dispositivo e in contemporanea si salva l'id dispositivo nel database)
+        per utenti non google il login da un token con id dispositivo ma sarà l'otp server in route check a decidere se tale id dispositivo verrà salvato nel db (solo la registrazione deve autorizzare ed emettere un token con id dispositivo salvato nel db)

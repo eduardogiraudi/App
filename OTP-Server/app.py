@@ -1,6 +1,6 @@
 from flask import Flask, Response, request, redirect
 import json
-from flask_jwt_extended import JWTManager, jwt_required, get_jwt_identity
+from flask_jwt_extended import JWTManager, jwt_required, get_jwt_identity, get_jwt, decode_token
 from dotenv import load_dotenv
 import os
 from datetime import datetime, timedelta
@@ -14,6 +14,7 @@ load_dotenv('.env')
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
 app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY') 
+app.config['JWT_ERROR_MESSAGE_KEY'] = 'message'
 jwt = JWTManager(app)
 hashing = Hashing(app)
 mongoclient = MongoClient(f'mongodb://{os.getenv('MONGO_USER')}:{os.getenv('MONGO_PASSWORD')}@{os.getenv('MONGO_HOST')}:{os.getenv('MONGO_PORT')}/')
@@ -33,6 +34,30 @@ def hash_to_last_4_int(hash):
             break
     return otp
 
+
+
+# @jwt.expired_token_loader
+# def get_expired_token_device (header, payload): 
+#     token = payload
+#     if 'device_id' in token:
+#         device_id = token['device_id']
+#         userId = token['sub']
+#         user = collection.find_one({'_id': ObjectId(userId)})
+#         if any(device_id == dev['device_id'] for dev in user['devices']):
+#             return json.dumps({'message': token['device_id']})
+#         else:
+#             pass #token da blacklistare
+#         #o il token è scaduto ma il dispositivo è ancora associato oppure il dispositivo è stato scollegato, allora lì il token va messo in blacklist
+#     else: return json.dumps({'message': 'Token has expired'})  
+
+
+# @app.route('/otp/test')
+# @jwt_required()
+# def handler ():
+#     return 'hola'
+
+
+
 @app.route('/otp/generate/', methods=['POST'])
 @jwt_required()
 def generateOTP():
@@ -49,7 +74,7 @@ def generateOTP():
 
         body= hash_to_last_4_int(hashing.hash_value(str(current_timestamp) + userID + otp_secret_key, salt=otp_salt))
 
-        if preferred_broker == 'sms' or preferred_broker != 'email': #così ovviamo a errori 
+        if preferred_broker == 'sms' or preferred_broker != 'email': #così ovviamo a errori tipo nessun broker selezionato
             if 'phone' in user:
                 preferred_broker = 'sms' #se il preferred broker non era settato correttamente lo risettiamo 
                 data={
@@ -74,7 +99,7 @@ def generateOTP():
         
         # db = mongoclient['users']
         # collection = db['users']
-        collection.update_one({'_id':ObjectId(userID)}, {"$set": {"OTP_Salt": otp_salt}})
+        collection.update_one({'_id':ObjectId(userID)}, {"$set": {"OTP_Salt": otp_salt, 'OTP_number_of_tries': 0}})
         
 
         redis_client.rpush(preferred_broker,json.dumps(data))
@@ -101,27 +126,7 @@ def redirect_to_frontend_server ():
 
 
 
-
-
-
-
-
-
-
-
 jwt valid after da implementare
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -143,11 +148,12 @@ def checkOTP():
         if not user_agent: return Response(json.dumps({'message': 'no user agent provided'}), status=400)
         #converte la data ottenuta in oggetto time
         given_timestamp = request.form.get('timestamp')
+        if not given_timestamp: return Response(json.dumps({'message': 'no timestamp provided'}), status=400)
         given_timestamp = datetime.strptime(given_timestamp,  '%Y-%m-%d %H:%M:%S.%f') 
         current_timestamp = datetime.now()
         otp_secret_key = dynamic_secret_key(str(given_timestamp))
         time_difference = current_timestamp - given_timestamp
-        if time_difference<=timedelta(minutes=15):
+        if time_difference<=timedelta(minutes=5):
             #prendere le ultime 4 cifre dell'hashing 
             correct_otp = hash_to_last_4_int(hashing.hash_value(str(given_timestamp) + userID + otp_secret_key, salt=real_user['OTP_Salt']))
             if correct_otp == given_otp:
@@ -155,13 +161,22 @@ def checkOTP():
                 new_device = secrets.token_hex(32)
 
                 #elimino il salt nel db e aggiungo il nuovo dispositivo
-                collection.update_one({'_id':ObjectId(userID)}, {"$set": {"OTP_Salt": ''}, '$push':{'devices': {'device_id':new_device, 'device_name': user_agent}}})
+                collection.update_one({'_id':ObjectId(userID)}, {"$set": {"OTP_Salt": '','OTP_number_of_tries': 0}, '$push':{'devices': {'device_id':new_device, 'device_name': user_agent}}})
 
                 #id del dispositivo da storare nei cookie
                 return Response(json.dumps({'message': new_device}), status=200) 
             elif real_user['OTP_Salt'] == '':
                 return Response(json.dumps({'message': 'You probably already used this OTP'}), status=410)
             else: 
+                # in sto caso si adda un campo tries col numero tentativi, si gestisce anche la sua exception allora
+                # si resetta all'otp corretto
+
+                collection.update_one({'_id': ObjectId(userID)},{'$inc': {'OTP_number_of_tries':1}})
+                updated_user=collection.find_one({'_id': ObjectId(userID)})
+                if updated_user['OTP_number_of_tries']>=3:
+                    collection.update_one({'_id': ObjectId(userID)}, {'$set':{'OTP_number_of_tries': 0, 'OTP_Salt': ''}})
+                    return Response(json.dumps({'message':'Wrong OTP for 3 times in a row, request a new OTP code'}), status=410)
+
                 return Response(json.dumps({'message': 'Incorrect OTP'}), status=401)
         else:
             return Response(json.dumps({'message': 'OTP expired'}), status=401)
@@ -173,8 +188,9 @@ def checkOTP():
 @app.route('/otp/select_broker', methods=['POST'])
 @jwt_required()
 def select_broker():
-    id = get_jwt_identity()
-    user = collection.find_one({'_id': ObjectId(id)})
+    userId = get_jwt_identity()
+    user = collection.find_one({'_id': ObjectId(userId)})
+    if not user: return Response(json.dumps({'message':'user not found, probably deleted'}), status=404)
     user['_id'] = str(user['_id']) 
     brokers = {}
     brokers["email"]=user['email']
