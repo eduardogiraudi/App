@@ -47,3 +47,4 @@ problema: i token devono poter essere revocati in caso di:
        in fase di otp quindi redirect al login altrimenti è solo un nuovo dispositivo in fase di registrazione e autorizzazione. questo permette all'auth server di gestire l'intera emissione dei token
        se l'utente si logga su google non deve ricevere otp o altro (molto semplice: in fase di login o registrazione si emette un token con id dispositivo e in contemporanea si salva l'id dispositivo nel database)
         per utenti non google il login da un token con id dispositivo ma sarà l'otp server in route check a decidere se tale id dispositivo verrà salvato nel db (solo la registrazione deve autorizzare ed emettere un token con id dispositivo salvato nel db)
+        sostituire quindi emission date e sostituirlo con device_id
