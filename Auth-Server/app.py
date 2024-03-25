@@ -14,6 +14,7 @@ from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 from email_validator import validate_email, EmailNotValidError
 from password_strength import PasswordPolicy, PasswordStats
 import redis
+from secrets import token_hex
 
 expires = timedelta(minutes=15)
 load_dotenv('.env')  # Carica le variabili d'ambiente da .env
@@ -73,6 +74,41 @@ password_policy = PasswordPolicy.from_names(
     numbers=1,
     special=1
 )
+
+
+
+
+
+
+
+
+#getta un errore in caso devices non esiste, non crea problemi in quanto il token viene restituito solo quando un device viene registrato
+#trovare come identificare un token normale e uno di refresh!!!! type refresh nel payload
+@jwt.expired_token_loader
+def get_expired_refresh_token_device (header, payload): 
+    token = payload
+    if 'device_id' in token and token['type']=='refresh': #sono i refresh token da intercettare, devono restituire l'id da mandare al frontend di login come parametro
+        device_id = token['device_id']
+        userId = token['sub']
+        user = collection.find_one({'_id': ObjectId(userId)})
+        if any(device_id == dev['device_id'] for dev in user['devices']):
+            return Response(json.dumps({'message': token['device_id']}), status=401) #token sparito ma device restituito: in frontend 
+        else:
+            pass #token da blacklistare
+        #o il token è scaduto ma il dispositivo è ancora associato oppure il dispositivo è stato scollegato, allora lì il token va messo in blacklist
+    
+    if token['type'] == 'access' and 'device_id' in token:
+        pass # blacklist anche qua, poi il refresh si occuperà di verificare se il device è stato scollegato o è ancora valido 
+    return Response(json.dumps({'message': 'Token has expired'}), status=401)
+
+
+
+
+
+
+
+
+
 
 
 @app.route('/auth/forgot_password', methods=['POST'])
@@ -205,14 +241,22 @@ def login ():
             if not real_user['active']:
                 return Response(json.dumps({'message':'user not verified'}), status=409)
             if hashing.check_value(real_user["password"],password, real_user["salt"]):
+                
+                new_device=token_hex(32)
+                device = request.form.get('device_id')
+                if 'devices' in real_user and any(device == dev['device_id'] for dev in real_user['devices']):
+                    new_device = device
+                
+                    
                 response = {
                     #emission date serve per questo: quando un utente cambia password permette di scollegare tutti i dispositivi, al cambio password ottiene una nuova coppia di token
                     # tutti i token con emission date antecedenti al campo jwt_valid_after nel database diventano invalidi e revocati
-                    'token': create_access_token(identity=str(real_user['_id']), expires_delta=expires, additional_claims={'emission_date':str(datetime.now())}), #mettere poi id
-                    'refresh_token': create_refresh_token(identity=str(real_user['_id']), additional_claims={'emission_date':str(datetime.now())}),
+                    'token': create_access_token(identity=str(real_user['_id']), expires_delta=expires, additional_claims={'device_id':new_device}), #mettere poi id
+                    'refresh_token': create_refresh_token(identity=str(real_user['_id']), additional_claims={'device_id':new_device}, expires_delta=timedelta(seconds=2)),
                     #'token': create_access_token(identity={'_id':str(real_user['_id'])}, expires_delta=expires),
                     #'refresh_token': create_refresh_token(identity={'_id':str(real_user['_id'])})
                 } #restituire poi un token e un refresh token
+                if not 'devices' in real_user: collection.update_one({'email': email}, {'$push': {'devices': {'device_id': new_device, 'device_name': 'Registration device'}}})
                 response = dumps({'message':response})
                 return Response(response, status=200)
             else: 

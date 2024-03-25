@@ -65,8 +65,12 @@ function App(){
           setCookie('token',newToken)
           return api.request(error.config)
         }catch(err){
-          window.location.href = authServer
-          console.log('bloccato riga 68', err);
+
+          // window.location.href = authServer
+          // console.log();
+          if(err.response.data.message === 'Token has expired') window.location.href = authServer
+          else window.location.href = authServer + '?device_id=' + err.response.data.message
+          // console.log('bloccato riga 68', err);
           return Promise.reject(err)
         }
       }

@@ -1,6 +1,6 @@
 from flask import Flask, Response, request, redirect
 import json
-from flask_jwt_extended import JWTManager, jwt_required, get_jwt_identity, get_jwt, decode_token
+from flask_jwt_extended import JWTManager, jwt_required, get_jwt_identity, get_jwt
 from dotenv import load_dotenv
 import os
 from datetime import datetime, timedelta
@@ -36,19 +36,7 @@ def hash_to_last_4_int(hash):
 
 
 
-# @jwt.expired_token_loader
-# def get_expired_token_device (header, payload): 
-#     token = payload
-#     if 'device_id' in token:
-#         device_id = token['device_id']
-#         userId = token['sub']
-#         user = collection.find_one({'_id': ObjectId(userId)})
-#         if any(device_id == dev['device_id'] for dev in user['devices']):
-#             return json.dumps({'message': token['device_id']})
-#         else:
-#             pass #token da blacklistare
-#         #o il token è scaduto ma il dispositivo è ancora associato oppure il dispositivo è stato scollegato, allora lì il token va messo in blacklist
-#     else: return json.dumps({'message': 'Token has expired'})  
+
 
 
 # @app.route('/otp/test')
@@ -158,13 +146,14 @@ def checkOTP():
             correct_otp = hash_to_last_4_int(hashing.hash_value(str(given_timestamp) + userID + otp_secret_key, salt=real_user['OTP_Salt']))
             if correct_otp == given_otp:
                 #deve poi inserire nel db che si è verificati con questo dispositivo
-                new_device = secrets.token_hex(32)
-
+                
+                new_device = get_jwt()
+                if not 'device_id' in new_device: return Response(json.dumps({'message': 'no device id given'}), status=400) 
+                new_device = new_device['device_id']
                 #elimino il salt nel db e aggiungo il nuovo dispositivo
                 collection.update_one({'_id':ObjectId(userID)}, {"$set": {"OTP_Salt": '','OTP_number_of_tries': 0}, '$push':{'devices': {'device_id':new_device, 'device_name': user_agent}}})
-
                 #id del dispositivo da storare nei cookie
-                return Response(json.dumps({'message': new_device}), status=200) 
+                return Response(json.dumps({'message': 'device registered'}), status=200) 
             elif real_user['OTP_Salt'] == '':
                 return Response(json.dumps({'message': 'You probably already used this OTP'}), status=410)
             else: 

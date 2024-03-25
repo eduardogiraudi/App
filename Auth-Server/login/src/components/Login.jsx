@@ -1,12 +1,16 @@
-import { Link } from "react-router-dom"
+import { Link, useLocation } from "react-router-dom"
 import LoginWithGoogle from "./LoginWithGoogle"
 import {authServer, resourceServer} from "./settings";import { useState } from "react";
-;
+
 function Login (){
     const [err, setErr] = useState()
+    const location = useLocation();
+    const queryParameters = new URLSearchParams(location.search);
+    const device = queryParameters.get('device_id')
     const handleSubmit = (e)=>{
         e.preventDefault()
         const body = new FormData(e.currentTarget)
+        if (device) body.append('device_id',device)
         let url = authServer+'/auth/login'
         fetch(url, {
             method: 'POST',
@@ -35,6 +39,7 @@ function Login (){
         })
         .catch(error=>setErr(error.message))
     }
+
     return (
         <>
             <Link to={'/register'}>Non hai un account? Registrati</Link>
