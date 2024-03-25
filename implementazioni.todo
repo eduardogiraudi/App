@@ -58,7 +58,7 @@ problema: i token devono poter essere revocati in caso di:
         la disconnessione dispositivo deve essere un pop e non un unset su mongo per evitare errori in mongodb
 
 
-        da implementare frontend: se è presente parametro nel login
+        da implementare:
         login con google ancora da vedere come
-        togliere l'expires al refresh
         se non ci sono dispositivi collegati ma l'utente si è già loggato la prima volta giusto che faccia l'otp
+        banlist dei token

@@ -252,7 +252,7 @@ def login ():
                     #emission date serve per questo: quando un utente cambia password permette di scollegare tutti i dispositivi, al cambio password ottiene una nuova coppia di token
                     # tutti i token con emission date antecedenti al campo jwt_valid_after nel database diventano invalidi e revocati
                     'token': create_access_token(identity=str(real_user['_id']), expires_delta=expires, additional_claims={'device_id':new_device}), #mettere poi id
-                    'refresh_token': create_refresh_token(identity=str(real_user['_id']), additional_claims={'device_id':new_device}, expires_delta=timedelta(seconds=2)),
+                    'refresh_token': create_refresh_token(identity=str(real_user['_id']), additional_claims={'device_id':new_device}),
                     #'token': create_access_token(identity={'_id':str(real_user['_id'])}, expires_delta=expires),
                     #'refresh_token': create_refresh_token(identity={'_id':str(real_user['_id'])})
                 } #restituire poi un token e un refresh token
